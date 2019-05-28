@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dk.data.dao.AppointmentMapper">
+    <resultMap id="BaseResultMap" type="com.dk.data.entity.Appointment">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="uuid" jdbcType="VARCHAR" property="uuid" />
+        <result column="order_list" jdbcType="VARCHAR" property="orderList" />
+        <result column="type" jdbcType="VARCHAR" property="type" />
+        <result column="hospital" jdbcType="VARCHAR" property="hospital" />
+        <result column="address" jdbcType="VARCHAR" property="address" />
+        <result column="user_remark" jdbcType="VARCHAR" property="userRemark" />
+        <result column="notes" jdbcType="VARCHAR" property="notes" />
+        <result column="evidence" jdbcType="VARCHAR" property="evidence" />
+        <result column="total" jdbcType="INTEGER" property="total" />
+        <result column="reschedule_price" jdbcType="DECIMAL" property="reschedulePrice" />
+        <result column="appointment_time" jdbcType="TIMESTAMP" property="appointmentTime" />
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+        <result column="operator" jdbcType="VARCHAR" property="operator" />
+        <result column="remark" jdbcType="VARCHAR" property="remark" />
+        <result column="status" jdbcType="TINYINT" property="status" />
+        <result column="reserve" jdbcType="VARCHAR" property="reserve" />
+        <result column="deleted" jdbcType="BIT" property="deleted" />
+    </resultMap>
+
+    <sql id="baseColumn">
+        ap.id,ap.uuid,ap.order_list,ap.type,ap.hospital,ap.address,ap.user_remark,ap.notes,ap.evidence,ap.total,ap.reschedule_price,ap.appointment_time,
+		ap.create_time,ap.update_time,ap.operator,ap.remark,ap.status,ap.reserve,ap.deleted
+    </sql>
+
+    <insert id="batchInsert" parameterType="java.util.List" keyProperty="id" useGeneratedKeys="true">
+        insert into appointment (
+        uuid,order_list,type,hospital,address,user_remark,notes,evidence,total,reschedule_price,appointment_time,create_time,update_time,operator,
+		remark,status,reserve,deleted
+        )
+        values
+        <foreach item="item" collection="list" separator=",">
+         (#{item.uuid,jdbcType=VARCHAR},#{item.orderList,jdbcType=VARCHAR},#{item.type,jdbcType=VARCHAR},
+        #{item.hospital,jdbcType=VARCHAR},#{item.address,jdbcType=VARCHAR},
+		#{item.userRemark,jdbcType=VARCHAR},#{item.notes,jdbcType=VARCHAR},#{item.evidence,jdbcType=VARCHAR},
+		#{item.total,jdbcType=INTEGER},#{item.reschedulePrice,jdbcType=DECIMAL},
+		#{item.appointmentTime,jdbcType=TIMESTAMP},#{item.createTime,jdbcType=TIMESTAMP},
+		#{item.updateTime,jdbcType=TIMESTAMP},#{item.operator,jdbcType=VARCHAR},#{item.remark,jdbcType=VARCHAR},
+		#{item.status,jdbcType=BIT},#{item.reserve,jdbcType=VARCHAR},#{item.deleted,jdbcType=BIT})
+        </foreach>
+    </insert>
+    <update id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        update appointment
+        set deleted = true
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="deleteByUuid" parameterType="java.lang.String">
+        update appointment
+        set deleted = true
+        where uuid = #{uuid,jdbcType=VARCHAR}
+    </update>
+    <update id="batchDeleteById" parameterType="java.util.List">
+        update appointment
+        set deleted = true
+        where id in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id,jdbcType=BIGINT}
+        </foreach>
+    </update>
+    <update id="batchDeleteByUuid" parameterType="java.util.List">
+        update appointment
+        set deleted = true
+        where uuid in
+        <foreach collection="list" item="uuid" open="(" separator="," close=")">
+            #{uuid,jdbcType=VARCHAR}
+        </foreach>
+    </update>
+    <select id="findAll" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from appointment as ap
+        where ap.deleted = false
+        <include refid="whereSql"/>
+        <include refid="orderSql"/>
+    </select>
+    <select id="findAllByUser" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from appointment as ap
+        left join order_list ol
+        on ap.order_list = ol.uuid
+        where ap.deleted = false
+        and ol.user = #{condition.user,jdbcType=VARCHAR}
+        <include refid="whereSql"/>
+        <include refid="orderSql"/>
+    </select>
+    <select id="count" resultType="java.lang.Integer">
+        select count(id)
+        from appointment as ap
+        where ap.deleted = false
+        <include refid="whereSql"/>
+    </select>
+    <select id="countByUser" resultType="java.lang.Long">
+        select count(ap.id)
+        from appointment as ap
+        left join order_list ol
+        on ap.order_list = ol.uuid
+        where ap.deleted = false
+        and ol.user = #{condition.user,jdbcType=VARCHAR}
+        <include refid="whereSql"/>
+    </select>
+    <select id="findByUuid" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from appointment as ap
+        where ap.uuid = #{uuid,jdbcType=VARCHAR}
+    </select>
+    <select id="batchQueryByIds" parameterType="java.util.List" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from appointment as ap
+        where ap.id in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        and ap.deleted = false
+    </select>
+    <select id="batchQueryByUuids" parameterType="java.util.List" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from appointment as ap
+        where ap.id in
+        <foreach collection="list" item="uuid" open="(" separator="," close=")">
+            '${uuid}'
+        </foreach>
+        and ap.deleted = false
+    </select>
+    <select id="findByOrderList" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from appointment as ap
+        where ap.deleted = false
+        and ap.status != '2'
+        and ap.order_list = #{orderList,jdbcType=VARCHAR}
+    </select>
+    <select id="findByStatus" parameterType="java.lang.Byte" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from appointment as ap
+        where ap.deleted = false
+        and ap.status = #{status,jdbcType=TINYINT}
+    </select>
+    <sql id="whereSql">
+        <if test="condition.orderList != null and condition.orderList != ''">
+            and ap.order_list = #{condition.orderList,jdbcType=VARCHAR}
+        </if>
+        <if test="condition.userRemark != null and condition.userRemark != ''">
+            and ap.user_remark like CONCAT('%',#{condition.userRemark},'%')
+        </if>
+        <if test="condition.notes != null and condition.notes != ''">
+            and ap.notes like CONCAT('%',#{condition.notes},'%')
+        </if>
+        <if test="condition.total != null and condition.total != ''">
+            and ap.total like CONCAT('%',#{condition.total},'%')
+        </if>
+        <if test="condition.appointmentTime != null">
+            <![CDATA[  and DATE_FORMAT(ap.appointment_time, '%Y-%m-%d') >=  DATE_FORMAT(#{appointmentTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.createTime != null">
+            <![CDATA[  and DATE_FORMAT(ap.create_time, '%Y-%m-%d') >=  DATE_FORMAT(#{createTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.updateTime != null">
+            <![CDATA[  and DATE_FORMAT(ap.update_time, '%Y-%m-%d') >=  DATE_FORMAT(#{updateTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.operator != null and condition.operator != ''">
+            and ap.operator like CONCAT('%',#{condition.operator},'%')
+        </if>
+        <if test="condition.remark != null and condition.remark != ''">
+            and ap.remark like CONCAT('%',#{condition.remark},'%')
+        </if>
+        <if test="condition.status != null">
+            and ap.status = #{condition.status}
+        </if>
+        <if test="condition.reserve != null and condition.reserve != ''">
+            and ap.reserve like CONCAT('%',#{condition.reserve},'%')
+        </if>
+    </sql>
+    <sql id="orderSql">
+        <if test="condition.field != null and condition.field != '' and condition.order != null and condition.order != ''">
+            order by ap.${condition.field} ${condition.order}
+        </if>
+        <if test="condition.field != null and condition.field != '' and (condition.order == null or condition.order == '')">
+            order by ap.${condition.field} desc
+        </if>
+        <if test="(condition.field == null or condition.field == '') and (condition.order == null or condition.order == '')">
+            order by ap.id desc
+        </if>
+    </sql>
+</mapper>

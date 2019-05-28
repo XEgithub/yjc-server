@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dk.data.dao.RoleMapper">
+    <resultMap id="BaseResultMap" type="com.dk.data.entity.Role">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="uuid" jdbcType="VARCHAR" property="uuid" />
+        <result column="name" jdbcType="VARCHAR" property="name" />
+        <result column="role" jdbcType="VARCHAR" property="role" />
+        <result column="remark" jdbcType="VARCHAR" property="remark" />
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+        <result column="deleted" jdbcType="BIT" property="deleted" />
+    </resultMap>
+
+    <sql id="baseColumn">
+        id,uuid,name,role,remark,create_time,update_time,deleted
+    </sql>
+
+    <insert id="batchInsert" parameterType="java.util.List" keyProperty="id" useGeneratedKeys="true">
+        insert into t_role (
+        uuid,name,role,remark,create_time,update_time,deleted
+        )
+        values
+        <foreach item="item" collection="list" separator=",">
+         (#{item.uuid,jdbcType=VARCHAR},#{item.name,jdbcType=VARCHAR},
+		#{item.role,jdbcType=VARCHAR},#{item.remark,jdbcType=VARCHAR},#{item.createTime,jdbcType=TIMESTAMP},
+		#{item.updateTime,jdbcType=TIMESTAMP},#{item.deleted,jdbcType=BIT})
+        </foreach>
+    </insert>
+    <update id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        update t_role
+        set deleted = true
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="deleteByUuid" parameterType="java.lang.String">
+        update t_role
+        set deleted = true
+        where uuid = #{uuid,jdbcType=VARCHAR}
+    </update>
+    <update id="batchDeleteById" parameterType="java.util.List">
+        update t_role
+        set deleted = true
+        where id in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id,jdbcType=BIGINT}
+        </foreach>
+    </update>
+    <update id="batchDeleteByUuid" parameterType="java.util.List">
+        update t_role
+        set deleted = true
+        where uuid in
+        <foreach collection="list" item="uuid" open="(" separator="," close=")">
+            #{uuid,jdbcType=VARCHAR}
+        </foreach>
+    </update>
+    <select id="findAll" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from t_role
+        where deleted = false
+        <include refid="whereSql"/>
+        <include refid="orderSql"/>
+    </select>
+    <select id="count" resultType="java.lang.Integer">
+        select count(id)
+        from t_role
+        where deleted = false
+        <include refid="whereSql"/>
+    </select>
+    <select id="findByUuid" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from t_role
+        where uuid = #{uuid}
+    </select>
+    <select id="batchQueryByIds" parameterType="java.util.List" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from t_role
+        where id in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        and deleted = false
+    </select>
+    <select id="batchQueryByUuids" parameterType="java.util.List" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from t_role
+        where id in
+        <foreach collection="list" item="uuid" open="(" separator="," close=")">
+            '${uuid}'
+        </foreach>
+        and deleted = false
+    </select>
+    <sql id="whereSql">
+        <if test="condition.name != null and condition.name != ''">
+            and name like CONCAT('%',#{condition.name},'%')
+        </if>
+        <if test="condition.role != null and condition.role != ''">
+            and role like CONCAT('%',#{condition.role},'%')
+        </if>
+        <if test="condition.remark != null and condition.remark != ''">
+            and remark like CONCAT('%',#{condition.remark},'%')
+        </if>
+        <if test="condition.createTime != null">
+            <![CDATA[  and DATE_FORMAT(create_time, '%Y-%m-%d') >=  DATE_FORMAT(#{createTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.updateTime != null">
+            <![CDATA[  and DATE_FORMAT(update_time, '%Y-%m-%d') >=  DATE_FORMAT(#{updateTime}, '%Y-%m-%d')   ]]>
+        </if>
+    </sql>
+    <sql id="orderSql">
+        <if test="condition.field != null and condition.field != '' and condition.order != null and condition.order != ''">
+            order by ${condition.field} ${condition.order}
+        </if>
+        <if test="condition.field != null and condition.field != '' and (condition.order == null or condition.order == '')">
+            order by ${condition.field} desc
+        </if>
+        <if test="(condition.field == null or condition.field == '') and (condition.order == null or condition.order == '')">
+            order by id desc
+        </if>
+    </sql>
+</mapper>

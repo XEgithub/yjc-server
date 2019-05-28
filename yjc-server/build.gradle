@@ -1,0 +1,42 @@
+bootJar {
+    baseName = 'com.dk'
+    version =  '1.0-SNAPSHOT'
+}
+
+dependencies {
+
+    //org.dom4j:dom4j:2.1.0
+    compile "org.dom4j:dom4j:2.1.0"
+
+    //spring web security jwt
+    compile 'org.springframework.boot:spring-boot-starter-web'
+    compile 'org.springframework.boot:spring-boot-starter-freemarker'
+    //compile 'org.springframework.boot:spring-boot-starter-security'
+    //compile 'org.springframework.security:spring-security-jwt'
+
+    //aop
+    compile "org.springframework.boot:spring-boot-starter-aop"
+
+    //shiro
+    compile 'org.apache.shiro:shiro-spring-boot-web-starter:1.4.0-RC2'
+    compile 'org.apache.shiro:shiro-ehcache:1.4.0'
+
+    //mybatis plus mysql
+    compile 'com.baomidou:mybatis-plus-boot-starter:3.0.1'
+    compile 'com.alibaba:druid-spring-boot-starter:1.1.10'
+    compile 'mysql:mysql-connector-java:8.0.12'
+
+    //swagger
+    compile 'com.spring4all:swagger-spring-boot-starter:1.8.0.RELEASE'
+
+    //jwt
+    compile group: 'com.auth0', name: 'java-jwt', version:'3.3.0'
+
+    //wechat
+    compile 'com.github.binarywang:weixin-java-mp:3.2.0'
+    compile 'com.github.binarywang:weixin-java-pay:3.2.0'
+
+    //my
+    //compile files('lib/commons-0.0.3.jar')
+    compile 'cn.sourcespro:commons-spring-boot-starter:0.0.1'
+}

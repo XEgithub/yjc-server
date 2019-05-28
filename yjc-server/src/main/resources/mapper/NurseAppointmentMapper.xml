@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dk.data.dao.NurseAppointmentMapper">
+    <resultMap id="BaseResultMap" type="com.dk.data.entity.NurseAppointment">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="uuid" jdbcType="VARCHAR" property="uuid" />
+        <result column="nurse" jdbcType="VARCHAR" property="nurse" />
+        <result column="appointment" jdbcType="VARCHAR" property="appointment" />
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+        <result column="status" jdbcType="TINYINT" property="status" />
+        <result column="reserve" jdbcType="VARCHAR" property="reserve" />
+        <result column="deleted" jdbcType="BIT" property="deleted" />
+    </resultMap>
+
+    <sql id="baseColumn">
+        na.id,na.uuid,na.nurse,na.appointment,na.create_time,na.update_time,na.status,
+		na.reserve,na.deleted
+    </sql>
+
+    <insert id="batchInsert" parameterType="java.util.List" keyProperty="id" useGeneratedKeys="true">
+        insert into nurse_appointment (
+        uuid,nurse,appointment,create_time,update_time,status,reserve,deleted
+        )
+        values
+        <foreach item="item" collection="list" separator=",">
+         (#{item.uuid,jdbcType=VARCHAR},#{item.nurse,jdbcType=VARCHAR},
+		#{item.appointment,jdbcType=VARCHAR},#{item.createTime,jdbcType=TIMESTAMP},
+		#{item.updateTime,jdbcType=TIMESTAMP},#{item.status,jdbcType=TINYINT},#{item.reserve,jdbcType=VARCHAR},
+		#{item.deleted,jdbcType=BIT})
+        </foreach>
+    </insert>
+    <update id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        update nurse_appointment
+        set deleted = true
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="deleteByUuid" parameterType="java.lang.String">
+        update nurse_appointment
+        set deleted = true
+        where uuid = #{uuid,jdbcType=VARCHAR}
+    </update>
+    <update id="batchDeleteById" parameterType="java.util.List">
+        update nurse_appointment
+        set deleted = true
+        where id in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id,jdbcType=BIGINT}
+        </foreach>
+    </update>
+    <update id="batchDeleteByUuid" parameterType="java.util.List">
+        update nurse_appointment
+        set deleted = true
+        where uuid in
+        <foreach collection="list" item="uuid" open="(" separator="," close=")">
+            #{uuid,jdbcType=VARCHAR}
+        </foreach>
+    </update>
+    <select id="findAll" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from nurse_appointment as na
+        where na.deleted = false
+        <include refid="whereSql"/>
+        <include refid="orderSql"/>
+    </select>
+    <select id="count" resultType="java.lang.Integer">
+        select count(id)
+        from nurse_appointment as na
+        where na.deleted = false
+        <include refid="whereSql"/>
+    </select>
+    <select id="findByUuid" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from nurse_appointment as na
+        where na.uuid = #{uuid}
+    </select>
+
+    <select id="findByAppointment" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from nurse_appointment as na
+        where (na.status = 0 or na.status = 3 or na.status = 6)
+        and na.appointment = #{appointment,jdbcType=VARCHAR}
+    </select>
+    <select id="findByStatusAndAppointment" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from nurse_appointment as na
+        where na.status = #{status,jdbcType=TINYINT}
+        and na.appointment = #{appointment,jdbcType=VARCHAR}
+    </select>
+    <select id="findByNurseAndUuid" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from nurse_appointment as na
+        where na.nurse = #{nurse,jdbcType=VARCHAR}
+        and na.uuid = #{uuid,jdbcType=VARCHAR}
+    </select>
+    <select id="findByAppointmentAndStatus" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from nurse_appointment as na
+        where na.appointment = #{uuid,jdbcType=VARCHAR}
+        and na.status = #{status,jdbcType=TINYINT}
+    </select>
+    <select id="batchQueryByIds" parameterType="java.util.List" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from nurse_appointment as na
+        where na.id in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        and na.deleted = false
+    </select>
+    <select id="batchQueryByUuids" parameterType="java.util.List" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from nurse_appointment as na
+        where na.id in
+        <foreach collection="list" item="uuid" open="(" separator="," close=")">
+            '${uuid}'
+        </foreach>
+        and na.deleted = false
+    </select>
+    <sql id="whereSql">
+        <if test="condition.nurse != null and condition.nurse != ''">
+            and na.nurse = #{condition.nurse}
+        </if>
+        <if test="condition.appointment != null and condition.appointment != ''">
+            and na.appointment like CONCAT('%',#{condition.appointment},'%')
+        </if>
+        <if test="condition.createTime != null">
+            <![CDATA[  and DATE_FORMAT(na.create_time, '%Y-%m-%d') >=  DATE_FORMAT(#{createTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.updateTime != null">
+            <![CDATA[  and DATE_FORMAT(na.update_time, '%Y-%m-%d') >=  DATE_FORMAT(#{updateTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.status != null and condition.status != 7">
+            and na.status = #{condition.status}
+        </if>
+        <if test="condition.status != null and condition.status == 7">
+            and na.status = 1 or na.status = 2 or na.status = 4 or na.status = 5
+        </if>
+        <if test="condition.reserve != null and condition.reserve != ''">
+            and na.reserve like CONCAT('%',#{condition.reserve},'%')
+        </if>
+    </sql>
+    <sql id="orderSql">
+        <if test="condition.field != null and condition.field != '' and condition.order != null and condition.order != ''">
+            order by na.${condition.field} ${condition.order}
+        </if>
+        <if test="condition.field != null and condition.field != '' and (condition.order == null or condition.order == '')">
+            order by na.${condition.field} desc
+        </if>
+        <if test="(condition.field == null or condition.field == '') and (condition.order == null or condition.order == '')">
+            order by na.id desc
+        </if>
+    </sql>
+</mapper>

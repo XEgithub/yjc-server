@@ -1,0 +1,327 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dk.data.dao.OrderMapper">
+    <resultMap id="BaseResultMap" type="com.dk.data.entity.Order">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="uuid" jdbcType="VARCHAR" property="uuid" />
+        <result column="order_no" jdbcType="VARCHAR" property="orderNo" />
+        <result column="user" jdbcType="VARCHAR" property="user" />
+        <result column="project" jdbcType="VARCHAR" property="project" />
+        <result column="hospital" jdbcType="VARCHAR" property="hospital" />
+        <result column="project_count" jdbcType="INTEGER" property="projectCount" />
+        <result column="order_status" jdbcType="VARCHAR" property="orderStatus" />
+        <result column="service_status" jdbcType="VARCHAR" property="serviceStatus" />
+        <result column="sampling_proof" jdbcType="VARCHAR" property="samplingProof" />
+        <result column="receive_time" jdbcType="TIMESTAMP" property="receiveTime" />
+        <result column="sampling_time" jdbcType="TIMESTAMP" property="samplingTime" />
+        <result column="test_time" jdbcType="TIMESTAMP" property="testTime" />
+        <result column="upload_report_time" jdbcType="TIMESTAMP" property="uploadReportTime" />
+        <result column="address" jdbcType="VARCHAR" property="address" />
+        <result column="patient" jdbcType="VARCHAR" property="patient" />
+        <result column="scope" jdbcType="VARCHAR" property="scope" />
+        <result column="paper_report" jdbcType="VARCHAR" property="paperReport" />
+        <result column="coupon" jdbcType="VARCHAR" property="coupon" />
+        <result column="project_price" jdbcType="DECIMAL" property="projectPrice" />
+        <result column="service_price" jdbcType="DECIMAL" property="servicePrice" />
+        <result column="coupon_price" jdbcType="DECIMAL" property="couponPrice" />
+        <result column="price" jdbcType="DECIMAL" property="price" />
+        <result column="reschedule_price" jdbcType="DECIMAL" property="reschedulePrice" />
+        <result column="reschedule_time" jdbcType="TIMESTAMP" property="rescheduleTime" />
+        <result column="reschedule_count" jdbcType="INTEGER" property="rescheduleCount" />
+        <result column="rebook_price" jdbcType="DECIMAL" property="rebookPrice" />
+        <result column="refund_price" jdbcType="DECIMAL" property="refundPrice" />
+        <result column="application_refund_time" jdbcType="TIMESTAMP" property="applicationRefundTime" />
+        <result column="refund_time" jdbcType="TIMESTAMP" property="refundTime" />
+        <result column="refund_cause" jdbcType="VARCHAR" property="refundCause" />
+        <result column="notes" jdbcType="VARCHAR" property="notes" />
+        <result column="user_remark" jdbcType="VARCHAR" property="userRemark" />
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+        <result column="operator" jdbcType="VARCHAR" property="operator" />
+        <result column="description" jdbcType="VARCHAR" property="description" />
+        <result column="remark" jdbcType="VARCHAR" property="remark" />
+        <result column="status" jdbcType="TINYINT" property="status" />
+        <result column="reserve" jdbcType="VARCHAR" property="reserve" />
+        <result column="deleted" jdbcType="BIT" property="deleted" />
+    </resultMap>
+    <sql id="baseColumn">
+        ol.id,ol.uuid,ol.order_no,ol.user,ol.project,ol.hospital,ol.project_count,ol.order_status,
+		ol.service_status,ol.sampling_proof,ol.receive_time,ol.sampling_time,ol.test_time,ol.upload_report_time,
+		ol.address,ol.patient,ol.scope,ol.paper_report,ol.coupon,ol.project_price,ol.service_price,
+		ol.coupon_price,ol.price,ol.reschedule_price,ol.reschedule_time,ol.reschedule_count,
+		ol.rebook_price,ol.refund_price,ol.application_refund_time,ol.refund_time,ol.refund_cause,
+		ol.notes,ol.user_remark,ol.create_time,ol.update_time,ol.operator,ol.description,ol.remark,
+		ol.status,ol.reserve,ol.deleted
+    </sql>
+    <insert id="batchInsert" parameterType="java.util.List" keyProperty="id" useGeneratedKeys="true">
+        insert into order_list (
+        uuid,order_no,user,project,hospital,project_count,order_status,service_status,sampling_proof,receive_time,
+		sampling_time,test_time,upload_report_time,address,patient,scope,paper_report,coupon,
+		project_price,service_price,coupon_price,price,reschedule_price,reschedule_time,reschedule_count
+		rebook_price,refund_price,application_refund_time,refund_time,refund_cause,notes,user_remark,
+		create_time,update_time,operator,description,remark,status,reserve,deleted
+        )
+        values
+        <foreach item="item" collection="list" separator=",">
+         (#{item.uuid,jdbcType=VARCHAR},#{item.orderNo,jdbcType=VARCHAR},
+		#{item.user,jdbcType=VARCHAR},#{item.project,jdbcType=VARCHAR},#{item.hospital,jdbcType=VARCHAR},
+		#{item.projectCount,jdbcType=INTEGER},
+		#{item.orderStatus,jdbcType=VARCHAR},#{item.serviceStatus,jdbcType=VARCHAR},
+        #{item.samplingProof,jdbcType=VARCHAR},
+		#{item.receiveTime,jdbcType=TIMESTAMP},#{item.samplingTime,jdbcType=TIMESTAMP},
+		#{item.testTime,jdbcType=TIMESTAMP},#{item.uploadReportTime,jdbcType=TIMESTAMP},
+		#{item.address,jdbcType=VARCHAR},#{item.patient,jdbcType=VARCHAR},
+		#{item.scope,jdbcType=VARCHAR},#{item.paperReport,jdbcType=VARCHAR},#{item.coupon,jdbcType=VARCHAR},
+		#{item.projectPrice,jdbcType=DECIMAL},#{item.servicePrice,jdbcType=DECIMAL},
+		#{item.couponPrice,jdbcType=DECIMAL},#{item.price,jdbcType=DECIMAL},
+        #{item.reschedulePrice,jdbcType=DECIMAL},#{item.rescheduleTime,jdbcType=TIMESTAMP},#{item.rescheduleCount,jdbcType=INTEGER},
+        #{item.rebookPrice,jdbcType=DECIMAL},#{item.refundPrice,jdbcType=DECIMAL},
+		#{item.applicationRefundTime,jdbcType=TIMESTAMP},#{item.refundTime,jdbcType=TIMESTAMP},
+        #{item.refundCause,jdbcType=VARCHAR},
+        #{item.notes,jdbcType=VARCHAR},
+		#{item.userRemark,jdbcType=VARCHAR},#{item.createTime,jdbcType=TIMESTAMP},
+		#{item.updateTime,jdbcType=TIMESTAMP},#{item.operator,jdbcType=VARCHAR},#{item.description,jdbcType=VARCHAR},
+		#{item.remark,jdbcType=VARCHAR},#{item.status,jdbcType=TINYINT},
+		#{item.reserve,jdbcType=VARCHAR},#{item.deleted,jdbcType=BIT})
+        </foreach>
+    </insert>
+    <update id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        update order_list
+        set deleted = true
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="deleteByUuid" parameterType="java.lang.String">
+        update order_list
+        set deleted = true
+        where uuid = #{uuid,jdbcType=VARCHAR}
+    </update>
+    <update id="batchDeleteById" parameterType="java.util.List">
+        update order_list
+        set deleted = true
+        where id in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id,jdbcType=BIGINT}
+        </foreach>
+    </update>
+    <update id="batchDeleteByUuid" parameterType="java.util.List">
+        update order_list
+        set deleted = true
+        where uuid in
+        <foreach collection="list" item="uuid" open="(" separator="," close=")">
+            #{uuid,jdbcType=VARCHAR}
+        </foreach>
+    </update>
+    <select id="findAll" resultMap="BaseResultMap">
+    select <include refid="baseColumn"/>
+    from order_list as ol
+    where ol.deleted = false
+    <include refid="whereSql"/>
+    <include refid="orderSql"/>
+    </select>
+    <select id="getAll" resultMap="BaseResultMap">
+        select ol.id,ol.uuid,ol.order_no,ol.user,ol.project,ol.hospital,ol.project_count,ol.order_status,
+        ol.service_status,ol.sampling_proof,ol.receive_time,ol.sampling_time,ol.test_time,ol.upload_report_time,
+        ol.address,pa.name as patient,ol.scope,ol.paper_report,ol.coupon,ol.project_price,ol.service_price,
+        ol.coupon_price,ol.price,ol.reschedule_price,ol.reschedule_time,ol.reschedule_count,
+        ol.rebook_price,ol.refund_price,ol.application_refund_time,ol.refund_time,ol.refund_cause,
+        ol.notes,ol.user_remark,
+        ol.create_time,ol.update_time,ol.operator,ol.description,ol.remark,ol.status,ol.reserve,
+        ol.deleted
+        from order_list as ol
+        left join patient pa
+        on ol.patient = pa.uuid
+        where ol.deleted = false
+        <include refid="whereSql"/>
+        <include refid="orderSql"/>
+    </select>
+    <select id="getAllByAppointment" resultMap="BaseResultMap">
+        select ol.id,ol.uuid,ol.order_no,ol.user,ol.project,ol.hospital,ol.project_count,ol.order_status,
+        ol.service_status,ol.sampling_proof,ol.receive_time,ol.sampling_time,ol.test_time,ol.upload_report_time,
+        ol.address,pa.name as patient,ol.scope,ol.paper_report,ol.coupon,ol.project_price,ol.service_price,
+        ol.coupon_price,ol.price,ol.reschedule_price,ol.reschedule_time,ol.reschedule_count,
+        ol.rebook_price,ol.refund_price,ol.application_refund_time,ol.refund_time,ol.refund_cause,
+        ol.notes,ol.user_remark,
+        ol.create_time,ol.update_time,ol.operator,ol.description,ol.remark,ol.status,ol.reserve,
+        ol.deleted
+        from order_list as ol
+        left join patient pa
+        on ol.patient = pa.uuid
+        where ol.deleted = false
+        and ol.order_status = '2' or ol.order_status = '3'
+        and ol.service_status = '0' or ol.service_status = '1'
+        <include refid="whereSql"/>
+        <include refid="orderSql"/>
+    </select>
+    <select id="countByAppointment" resultType="java.lang.Integer">
+        select count(ol.id)
+        from order_list as ol
+        left join patient pa
+        on ol.patient = pa.uuid
+        where ol.deleted = false
+        and ol.order_status = '2' or ol.order_status = '3'
+        and ol.service_status = '0' or ol.service_status = '1'
+        <include refid="whereSql"/>
+    </select>
+    <select id="findByUserAndUuid" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from order_list as ol
+        where ol.deleted = false
+        and ol.user = #{user,jdbcType=VARCHAR}
+        and ol.uuid = #{uuid,jdbcType=VARCHAR}
+    </select>
+    <select id="count" resultType="java.lang.Integer">
+        select count(id)
+        from order_list as ol
+        where ol.deleted = false
+        <include refid="whereSql"/>
+    </select>
+    <select id="findByUuid" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from order_list as ol
+        where ol.uuid = #{uuid,jdbcType=VARCHAR}
+    </select>
+    <select id="batchQueryByIds" parameterType="java.util.List" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from order_list as ol
+        where ol.id in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        and ol.deleted = false
+    </select>
+    <select id="batchQueryByUuids" parameterType="java.util.List" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from order_list as ol
+        where ol.id in
+        <foreach collection="list" item="uuid" open="(" separator="," close=")">
+            '${uuid}'
+        </foreach>
+        and ol.deleted = false
+    </select>
+    <select id="findByAppointment" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from order_list as ol
+        left join appointment ap
+        on ol.uuid = ap.order_list
+        where ol.deleted = false
+        and ap.uuid = #{uuid,jdbcType=VARCHAR}
+    </select>
+    <select id="countByPatient" resultType="java.lang.Integer">
+        select count(id)
+        from order_list as ol
+        where ol.deleted = false
+        and ol.patient = #{uuid,jdbcType=VARCHAR}
+    </select>
+    <sql id="whereSql">
+        <if test="condition.orderNo != null and condition.orderNo != ''">
+            and ol.order_no like CONCAT('%',#{condition.orderNo},'%')
+        </if>
+        <if test="condition.user != null and condition.user != ''">
+            and ol.user = #{condition.user}
+        </if>
+        <if test="condition.project != null and condition.project != ''">
+            and ol.project like CONCAT('%',#{condition.project},'%')
+        </if>
+        <if test="condition.projectCount != null and condition.projectCount != ''">
+            and ol.project_count like CONCAT('%',#{condition.projectCount},'%')
+        </if>
+        <if test="condition.orderStatus != null and condition.orderStatus != ''">
+            and ol.order_status = #{condition.orderStatus}
+        </if>
+        <if test="condition.serviceStatus != null and condition.serviceStatus != ''">
+            and ol.service_status like CONCAT('%',#{condition.serviceStatus},'%')
+        </if>
+        <if test="condition.receiveTime != null">
+            <![CDATA[  and DATE_FORMAT(ol.receive_time, '%Y-%m-%d') >=  DATE_FORMAT(#{receiveTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.samplingTime != null">
+            <![CDATA[  and DATE_FORMAT(ol.sampling_time, '%Y-%m-%d') >=  DATE_FORMAT(#{samplingTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.testTime != null">
+            <![CDATA[  and DATE_FORMAT(ol.test_time, '%Y-%m-%d') >=  DATE_FORMAT(#{testTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.uploadReportTime != null">
+            <![CDATA[  and DATE_FORMAT(ol.upload_report_time, '%Y-%m-%d') >=  DATE_FORMAT(#{uploadReportTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.address != null and condition.address != ''">
+            and ol.address like CONCAT('%',#{condition.address},'%')
+        </if>
+        <if test="condition.patient != null and condition.patient != ''">
+            and ol.patient like CONCAT('%',#{condition.patient},'%')
+        </if>
+        <if test="condition.scope != null and condition.scope != ''">
+            and ol.scope like CONCAT('%',#{condition.scope},'%')
+        </if>
+        <if test="condition.paperReport != null and condition.paperReport != ''">
+            and ol.paper_report like CONCAT('%',#{condition.paperReport},'%')
+        </if>
+        <if test="condition.coupon != null and condition.coupon != ''">
+            and ol.coupon like CONCAT('%',#{condition.coupon},'%')
+        </if>
+        <if test="condition.projectPrice != null">
+            and ol.project_price = #{condition.projectPrice}
+        </if>
+        <if test="condition.servicePrice != null">
+            and ol.service_price = #{condition.servicePrice}
+        </if>
+        <if test="condition.couponPrice != null">
+            and ol.coupon_price = #{condition.couponPrice}
+        </if>
+        <if test="condition.price != null">
+            and ol.price = #{condition.price}
+        </if>
+        <if test="condition.rebookPrice != null">
+            and ol.rebook_price = #{condition.rebookPrice}
+        </if>
+        <if test="condition.refundPrice != null">
+            and ol.refund_price = #{condition.refundPrice}
+        </if>
+        <if test="condition.applicationRefundTime != null">
+            <![CDATA[  and DATE_FORMAT(ol.application_refund_time, '%Y-%m-%d') >=  DATE_FORMAT(#{applicationRefundTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.refundTime != null">
+            <![CDATA[  and DATE_FORMAT(ol.refund_time, '%Y-%m-%d') >=  DATE_FORMAT(#{refundTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.refundCause != null and condition.refundCause != ''">
+            and ol.refund_cause = #{condition.refundCause}
+        </if>
+        <if test="condition.notes != null and condition.notes != ''">
+            and ol.notes like CONCAT('%',#{condition.notes},'%')
+        </if>
+        <if test="condition.userRemark != null and condition.userRemark != ''">
+            and ol.user_remark like CONCAT('%',#{condition.userRemark},'%')
+        </if>
+        <if test="condition.createTime != null">
+            <![CDATA[  and DATE_FORMAT(ol.create_time, '%Y-%m-%d') >=  DATE_FORMAT(#{createTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.updateTime != null">
+            <![CDATA[  and DATE_FORMAT(ol.update_time, '%Y-%m-%d') >=  DATE_FORMAT(#{updateTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.operator != null and condition.operator != ''">
+            and ol.operator like CONCAT('%',#{condition.operator},'%')
+        </if>
+        <if test="condition.description != null and condition.description != ''">
+            and ol.description like CONCAT('%',#{condition.description},'%')
+        </if>
+        <if test="condition.remark != null and condition.remark != ''">
+            and ol.remark like CONCAT('%',#{condition.remark},'%')
+        </if>
+        <if test="condition.status != null">
+            and ol.status = #{condition.status}
+        </if>
+        <if test="condition.reserve != null and condition.reserve != ''">
+            and ol.reserve like CONCAT('%',#{condition.reserve},'%')
+        </if>
+    </sql>
+    <sql id="orderSql">
+        <if test="condition.field != null and condition.field != '' and condition.order != null and condition.order != ''">
+            order by ol.${condition.field} ${condition.order}
+        </if>
+        <if test="condition.field != null and condition.field != '' and (condition.order == null or condition.order == '')">
+            order by ol.${condition.field} desc
+        </if>
+        <if test="(condition.field == null or condition.field == '') and (condition.order == null or condition.order == '')">
+            order by ol.id desc
+        </if>
+    </sql>
+</mapper>

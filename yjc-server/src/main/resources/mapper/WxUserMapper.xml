@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dk.data.dao.WxUserMapper">
+    <resultMap id="BaseResultMap" type="com.dk.data.entity.WxUser">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="uuid" jdbcType="VARCHAR" property="uuid" />
+        <result column="subscribe" jdbcType="SMALLINT" property="subscribe" />
+        <result column="openid" jdbcType="VARCHAR" property="openid" />
+        <result column="nickname" jdbcType="VARCHAR" property="nickname" />
+        <result column="sex" jdbcType="SMALLINT" property="sex" />
+        <result column="province" jdbcType="VARCHAR" property="province" />
+        <result column="city" jdbcType="VARCHAR" property="city" />
+        <result column="country" jdbcType="VARCHAR" property="country" />
+        <result column="language" jdbcType="VARCHAR" property="language" />
+        <result column="headimgurl" jdbcType="VARCHAR" property="headimgurl" />
+        <result column="subscribe_time" jdbcType="VARCHAR" property="subscribeTime" />
+        <result column="unionid" jdbcType="VARCHAR" property="unionid" />
+        <result column="remark" jdbcType="VARCHAR" property="remark" />
+        <result column="groupid" jdbcType="INTEGER" property="groupid" />
+        <result column="tagid_list" jdbcType="VARCHAR" property="tagidList" />
+        <result column="subscribe_scene" jdbcType="VARCHAR" property="subscribeScene" />
+        <result column="source" jdbcType="VARCHAR" property="source" />
+        <result column="address" jdbcType="VARCHAR" property="address" />
+        <result column="qr_scene" jdbcType="VARCHAR" property="qrScene" />
+        <result column="qr_scene_str" jdbcType="VARCHAR" property="qrSceneStr" />
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+        <result column="reserve" jdbcType="VARCHAR" property="reserve" />
+        <result column="remark1" jdbcType="VARCHAR" property="remark1" />
+        <result column="deleted" jdbcType="BIT" property="deleted" />
+    </resultMap>
+
+    <sql id="baseColumn">
+        wu.id,wu.uuid,wu.subscribe,wu.openid,wu.nickname,wu.sex,wu.province,wu.city,wu.country,
+		wu.language,wu.headimgurl,wu.subscribe_time,wu.unionid,wu.remark,wu.groupid,
+		wu.tagid_list,wu.subscribe_scene,wu.source,wu.address,wu.qr_scene,wu.qr_scene_str,wu.create_time,
+		wu.update_time,wu.reserve,wu.remark1,wu.deleted
+    </sql>
+
+    <insert id="batchInsert" parameterType="java.util.List" keyProperty="id" useGeneratedKeys="true">
+        insert into wx_user (
+        uuid,subscribe,openid,nickname,sex,province,city,country,language,headimgurl,
+		subscribe_time,unionid,remark,groupid,tagid_list,subscribe_scene,source,address,qr_scene,qr_scene_str,
+		create_time,update_time,reserve,remark1,deleted
+        )
+        values
+        <foreach item="item" collection="list" separator=",">
+         (#{item.uuid,jdbcType=VARCHAR},#{item.subscribe,jdbcType=SMALLINT},
+		#{item.openid,jdbcType=VARCHAR},#{item.nickname,jdbcType=VARCHAR},#{item.sex,jdbcType=SMALLINT},
+		#{item.province,jdbcType=VARCHAR},#{item.city,jdbcType=VARCHAR},
+		#{item.country,jdbcType=VARCHAR},#{item.language,jdbcType=VARCHAR},#{item.headimgurl,jdbcType=VARCHAR},
+		#{item.subscribeTime,jdbcType=VARCHAR},#{item.unionid,jdbcType=VARCHAR},
+		#{item.remark,jdbcType=VARCHAR},#{item.groupid,jdbcType=INTEGER},
+		#{item.tagidList,jdbcType=VARCHAR},#{item.subscribeScene,jdbcType=VARCHAR},#{item.source,jdbcType=VARCHAR},
+		#{item.address,jdbcType=VARCHAR},#{item.qrScene,jdbcType=VARCHAR},
+		#{item.qrSceneStr,jdbcType=VARCHAR},#{item.createTime,jdbcType=TIMESTAMP},
+		#{item.updateTime,jdbcType=TIMESTAMP},#{item.reserve,jdbcType=VARCHAR},#{item.remark1,jdbcType=VARCHAR},
+		#{item.deleted,jdbcType=BIT})
+        </foreach>
+    </insert>
+    <update id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        update wx_user
+        set deleted = true
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="deleteByUuid" parameterType="java.lang.String">
+        update wx_user
+        set deleted = true
+        where uuid = #{uuid,jdbcType=VARCHAR}
+    </update>
+    <update id="batchDeleteById" parameterType="java.util.List">
+        update wx_user
+        set deleted = true
+        where id in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id,jdbcType=BIGINT}
+        </foreach>
+    </update>
+    <update id="batchDeleteByUuid" parameterType="java.util.List">
+        update wx_user
+        set deleted = true
+        where uuid in
+        <foreach collection="list" item="uuid" open="(" separator="," close=")">
+            #{uuid,jdbcType=VARCHAR}
+        </foreach>
+    </update>
+    <select id="findAll" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from wx_user as wu
+        where wu.deleted = false
+        <include refid="whereSql"/>
+        <include refid="orderSql"/>
+    </select>
+    <select id="findByUuid" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from wx_user as wu
+        where wu.deleted = false
+        and wu.uuid = #{uuid,jdbcType=VARCHAR}
+    </select>
+    <select id="getByUuid" resultMap="BaseResultMap">
+        select wu.id,wu.uuid,wu.nickname,wu.sex,wu.headimgurl,wue.integral
+        from wx_user as wu
+        join wx_user_extend wue
+        on wu.uuid = wue.wx_user
+        where wu.deleted = false
+        and wu.uuid = #{uuid,jdbcType=VARCHAR}
+    </select>
+    <select id="count" resultType="java.lang.Integer">
+        select count(id)
+        from wx_user as wu
+        where wu.deleted = false
+        <include refid="whereSql"/>
+    </select>
+    <select id="batchQueryByIds" parameterType="java.util.List" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from wx_user as wu
+        where wu.id in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        and wu.deleted = false
+    </select>
+    <select id="batchQueryByUuids" parameterType="java.util.List" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from wx_user as wu
+        where wu.id in
+        <foreach collection="list" item="uuid" open="(" separator="," close=")">
+            '${uuid}'
+        </foreach>
+        and wu.deleted = false
+    </select>
+    <sql id="whereSql">
+        <if test="condition.subscribe != null">
+            and wu.subscribe = #{condition.subscribe}
+        </if>
+        <if test="condition.openid != null and condition.openid != ''">
+            and wu.openid like CONCAT('%',#{condition.openid},'%')
+        </if>
+        <if test="condition.nickname != null and condition.nickname != ''">
+            and wu.nickname like CONCAT('%',#{condition.nickname},'%')
+        </if>
+        <if test="condition.sex != null">
+            and wu.sex = #{condition.sex}
+        </if>
+        <if test="condition.province != null and condition.province != ''">
+            and wu.province like CONCAT('%',#{condition.province},'%')
+        </if>
+        <if test="condition.city != null and condition.city != ''">
+            and wu.city like CONCAT('%',#{condition.city},'%')
+        </if>
+        <if test="condition.country != null and condition.country != ''">
+            and wu.country like CONCAT('%',#{condition.country},'%')
+        </if>
+        <if test="condition.language != null and condition.language != ''">
+            and wu.language like CONCAT('%',#{condition.language},'%')
+        </if>
+        <if test="condition.headimgurl != null and condition.headimgurl != ''">
+            and wu.headimgurl like CONCAT('%',#{condition.headimgurl},'%')
+        </if>
+        <if test="condition.subscribeTime != null and condition.subscribeTime != ''">
+            and wu.subscribe_time like CONCAT('%',#{condition.subscribeTime},'%')
+        </if>
+        <if test="condition.unionid != null and condition.unionid != ''">
+            and wu.unionid like CONCAT('%',#{condition.unionid},'%')
+        </if>
+        <if test="condition.remark != null and condition.remark != ''">
+            and wu.remark like CONCAT('%',#{condition.remark},'%')
+        </if>
+        <if test="condition.groupid != null">
+            and wu.groupid = #{condition.groupid}
+        </if>
+        <if test="condition.tagidList != null and condition.tagidList != ''">
+            and wu.tagid_list like CONCAT('%',#{condition.tagidList},'%')
+        </if>
+        <if test="condition.subscribeScene != null and condition.subscribeScene != ''">
+            and wu.subscribe_scene like CONCAT('%',#{condition.subscribeScene},'%')
+        </if>
+        <if test="condition.source != null and condition.source != ''">
+            and wu.source like CONCAT('%',#{condition.source},'%')
+        </if>
+        <if test="condition.address != null and condition.address != ''">
+            and wu.address like CONCAT('%',#{condition.address},'%')
+        </if>
+        <if test="condition.qrScene != null and condition.qrScene != ''">
+            and wu.qr_scene like CONCAT('%',#{condition.qrScene},'%')
+        </if>
+        <if test="condition.qrSceneStr != null and condition.qrSceneStr != ''">
+            and wu.qr_scene_str like CONCAT('%',#{condition.qrSceneStr},'%')
+        </if>
+        <if test="condition.createTime != null">
+            <![CDATA[  and DATE_FORMAT(wu.create_time, '%Y-%m-%d') >=  DATE_FORMAT(#{createTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.updateTime != null">
+            <![CDATA[  and DATE_FORMAT(wu.update_time, '%Y-%m-%d') >=  DATE_FORMAT(#{updateTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.reserve != null and condition.reserve != ''">
+            and wu.reserve like CONCAT('%',#{condition.reserve},'%')
+        </if>
+        <if test="condition.remark1 != null and condition.remark1 != ''">
+            and wu.remark1 like CONCAT('%',#{condition.remark1},'%')
+        </if>
+    </sql>
+    <sql id="orderSql">
+        <if test="condition.field != null and condition.field != '' and condition.order != null and condition.order != ''">
+            order by wu.${condition.field} ${condition.order}
+        </if>
+        <if test="condition.field != null and condition.field != '' and (condition.order == null or condition.order == '')">
+            order by wu.${condition.field} desc
+        </if>
+        <if test="(condition.field == null or condition.field == '') and (condition.order == null or condition.order == '')">
+            order by wu.id desc
+        </if>
+    </sql>
+</mapper>

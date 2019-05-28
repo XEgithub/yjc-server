@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dk.data.dao.MenuMapper">
+    <resultMap id="BaseResultMap" type="com.dk.data.entity.Menu">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="uuid" jdbcType="VARCHAR" property="uuid" />
+        <result column="name" jdbcType="VARCHAR" property="name" />
+        <result column="url" jdbcType="VARCHAR" property="url" />
+        <result column="icon" jdbcType="VARCHAR" property="icon" />
+        <result column="remark" jdbcType="VARCHAR" property="remark" />
+        <result column="pid" jdbcType="BIGINT" property="pid" />
+        <result column="lft" jdbcType="INTEGER" property="lft" />
+        <result column="rgt" jdbcType="INTEGER" property="rgt" />
+        <result column="level" jdbcType="INTEGER" property="level" />
+        <result column="ids" jdbcType="VARCHAR" property="ids" />
+        <result column="leaf" jdbcType="BIT" property="leaf" />
+        <result column="sortt" jdbcType="INTEGER" property="sortt" />
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+        <result column="deleted" jdbcType="BIT" property="deleted" />
+    </resultMap>
+
+    <sql id="baseColumn">
+        id,uuid,name,url,icon,remark,pid,lft,rgt,level,ids,leaf,sortt,create_time,update_time,deleted
+    </sql>
+
+    <insert id="batchInsert" parameterType="java.util.List" keyProperty="id" useGeneratedKeys="true">
+        insert into t_menu (
+        uuid,name,url,icon,remark,pid,lft,rgt,level,ids,leaf,sortt,create_time,update_time,deleted
+        )
+        values
+        <foreach item="item" collection="list" separator=",">
+         (#{item.uuid,jdbcType=VARCHAR},#{item.name,jdbcType=VARCHAR},
+		#{item.url,jdbcType=VARCHAR},#{item.icon,jdbcType=VARCHAR},#{item.remark,jdbcType=VARCHAR},
+		#{item.pid,jdbcType=BIGINT},#{item.lft,jdbcType=INTEGER},#{item.rgt,jdbcType=INTEGER},
+		#{item.level,jdbcType=INTEGER},#{item.ids,jdbcType=VARCHAR},#{item.leaf,jdbcType=BIT},
+		#{item.sortt,jdbcType=INTEGER},#{item.createTime,jdbcType=TIMESTAMP},
+		#{item.updateTime,jdbcType=TIMESTAMP},#{item.deleted,jdbcType=BIT})
+        </foreach>
+    </insert>
+    <update id="deleteById" parameterType="java.lang.Long">
+        update t_menu
+        set deleted = true
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="deleteByUuid" parameterType="java.lang.String">
+        update t_menu
+        set deleted = true
+        where uuid = #{uuid,jdbcType=VARCHAR}
+    </update>
+    <select id="findAll" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from t_menu
+        where deleted = false
+        <include refid="whereSql"/>
+        <include refid="orderSql"/>
+    </select>
+    <select id="count" resultType="java.lang.Integer">
+        select count(id)
+        from t_menu
+        where deleted = false
+        <include refid="whereSql"/>
+    </select>
+    <select id="findByPid" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from t_menu
+        where pid = #{id,jdbcType=BIGINT}
+        and deleted = false
+    </select>
+    <select id="findByLevel" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from t_menu
+        where level = #{level,jdbcType=INTEGER}
+        and deleted = false
+    </select>
+    <select id="findByLftAndRgt" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from t_menu
+        where
+        <![CDATA[ lft > #{lft} and rgt < #{rgt} ]]>
+        and deleted = false
+    </select>
+    <select id="findByUuid" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from t_menu
+        where uuid = #{uuid}
+    </select>
+    <select id="batchQueryByIds" parameterType="java.util.List" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from t_menu
+        where id in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        and deleted = false
+    </select>
+    <select id="batchQueryByUuids" parameterType="java.util.List" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from t_menu
+        where id in
+        <foreach collection="list" item="uuid" open="(" separator="," close=")">
+            '${uuid}'
+        </foreach>
+        and deleted = false
+    </select>
+    <sql id="whereSql">
+        <if test="condition.name != null and condition.name != ''">
+            and name like CONCAT('%',#{condition.name},'%')
+        </if>
+        <if test="condition.url != null and condition.url != ''">
+            and url like CONCAT('%',#{condition.url},'%')
+        </if>
+        <if test="condition.icon != null and condition.icon != ''">
+            and icon like CONCAT('%',#{condition.icon},'%')
+        </if>
+        <if test="condition.remark != null and condition.remark != ''">
+            and remark like CONCAT('%',#{condition.remark},'%')
+        </if>
+        <if test="condition.pid != null">
+            and pid = #{condition.pid}
+        </if>
+        <if test="condition.level != null">
+            and level = #{condition.level}
+        </if>
+        <if test="condition.leaf != null">
+            and leaf = #{condition.leaf}
+        </if>
+        <if test="condition.sortt != null">
+            and sortt = #{condition.sortt}
+        </if>
+        <if test="condition.createTime != null">
+            <![CDATA[  and DATE_FORMAT(create_time, '%Y-%m-%d') >=  DATE_FORMAT(#{createTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.updateTime != null">
+            <![CDATA[  and DATE_FORMAT(update_time, '%Y-%m-%d') >=  DATE_FORMAT(#{updateTime}, '%Y-%m-%d')   ]]>
+        </if>
+    </sql>
+    <sql id="orderSql">
+        <if test="condition.field != null and condition.field != '' and condition.order != null and condition.order != ''">
+            order by ${condition.field} ${condition.order}
+        </if>
+        <if test="condition.field != null and condition.field != '' and (condition.order == null or condition.order == '')">
+            order by ${condition.field} desc
+        </if>
+        <if test="(condition.field == null or condition.field == '') and (condition.order == null or condition.order == '')">
+            order by id asc
+        </if>
+    </sql>
+</mapper>

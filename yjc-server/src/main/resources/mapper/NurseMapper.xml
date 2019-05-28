@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dk.data.dao.NurseMapper">
+    <resultMap id="BaseResultMap" type="com.dk.data.entity.Nurse">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="uuid" jdbcType="VARCHAR" property="uuid" />
+        <result column="wx_user" jdbcType="VARCHAR" property="wxUser" />
+        <result column="nick_name" jdbcType="VARCHAR" property="nickName" />
+        <result column="name" jdbcType="VARCHAR" property="name" />
+        <result column="age" jdbcType="INTEGER" property="age" />
+        <result column="sex" jdbcType="VARCHAR" property="sex" />
+        <result column="logo" jdbcType="VARCHAR" property="logo" />
+        <result column="certificates_type" jdbcType="VARCHAR" property="certificatesType" />
+        <result column="certificates_no" jdbcType="VARCHAR" property="certificatesNo" />
+        <result column="phone" jdbcType="VARCHAR" property="phone" />
+        <result column="id_card_just" jdbcType="VARCHAR" property="idCardJust" />
+        <result column="id_card_against" jdbcType="VARCHAR" property="idCardAgainst" />
+        <result column="profession_image" jdbcType="VARCHAR" property="professionImage" />
+        <result column="practice_image" jdbcType="VARCHAR" property="practiceImage" />
+        <result column="chest_card_image" jdbcType="VARCHAR" property="chestCardImage" />
+        <result column="address" jdbcType="VARCHAR" property="address" />
+        <result column="hospital" jdbcType="VARCHAR" property="hospital" />
+        <result column="evaluate" jdbcType="VARCHAR" property="evaluate" />
+        <result column="total_number" jdbcType="BIGINT" property="totalNumber" />
+        <result column="balance" jdbcType="DECIMAL" property="balance" />
+        <result column="score" jdbcType="BIGINT" property="score" />
+        <result column="remark" jdbcType="VARCHAR" property="remark" />
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+        <result column="operator" jdbcType="VARCHAR" property="operator" />
+        <result column="description" jdbcType="VARCHAR" property="description" />
+        <result column="service_status" jdbcType="BIT" property="serviceStatus" />
+        <result column="status" jdbcType="TINYINT" property="status" />
+        <result column="reserve" jdbcType="VARCHAR" property="reserve" />
+        <result column="deleted" jdbcType="BIT" property="deleted" />
+    </resultMap>
+
+    <sql id="baseColumn">
+        nu.id,nu.uuid,nu.wx_user,nu.nick_name,nu.name,nu.age,nu.sex,nu.logo,nu.certificates_type,
+		nu.certificates_no,nu.phone,nu.id_card_just,nu.id_card_against,nu.profession_image,
+		nu.practice_image,nu.chest_card_image,nu.address,nu.hospital,nu.evaluate,
+		nu.total_number,nu.balance,nu.score,nu.remark,nu.create_time,nu.update_time,nu.operator,
+		nu.description,nu.service_status,nu.status,nu.reserve,nu.deleted
+    </sql>
+
+    <insert id="batchInsert" parameterType="java.util.List" keyProperty="id" useGeneratedKeys="true">
+        insert into nurse (
+        uuid,wx_user,nick_name,name,age,sex,logo,certificates_type,certificates_no,phone,id_card_just,
+		id_card_against,profession_image,practice_image,chest_card_image,address,
+		hospital,evaluate,total_number,balance,score,remark,create_time,update_time,operator,
+		description,service_status,status,reserve,deleted
+        )
+        values
+        <foreach item="item" collection="list" separator=",">
+         (#{item.uuid,jdbcType=VARCHAR},#{item.wxUser,jdbcType=VARCHAR},
+        #{item.nickName,jdbcType=VARCHAR},
+		#{item.name,jdbcType=VARCHAR},#{item.age,jdbcType=INTEGER},#{item.sex,jdbcType=VARCHAR},
+		#{item.logo,jdbcType=VARCHAR},#{item.certificatesType,jdbcType=VARCHAR},
+		#{item.certificatesNo,jdbcType=VARCHAR},#{item.phone,jdbcType=VARCHAR},
+		#{item.idCardJust,jdbcType=VARCHAR},#{item.idCardAgainst,jdbcType=VARCHAR},#{item.professionImage,jdbcType=VARCHAR},
+		#{item.practiceImage,jdbcType=VARCHAR},#{item.chestCardImage,jdbcType=VARCHAR},
+		#{item.address,jdbcType=VARCHAR},#{item.hospital,jdbcType=VARCHAR},#{item.evaluate,jdbcType=VARCHAR},
+		#{item.totalNumber,jdbcType=BIGINT},#{item.balance,jdbcType=DECIMAL},
+		#{item.score,jdbcType=BIGINT},#{item.remark,jdbcType=VARCHAR},#{item.createTime,jdbcType=TIMESTAMP},
+		#{item.updateTime,jdbcType=TIMESTAMP},#{item.operator,jdbcType=VARCHAR},
+		#{item.description,jdbcType=VARCHAR},#{item.serviceStatus,jdbcType=BIT},
+		#{item.status,jdbcType=TINYINT},
+		#{item.reserve,jdbcType=VARCHAR},#{item.deleted,jdbcType=BIT})
+        </foreach>
+    </insert>
+    <update id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        update nurse
+        set deleted = true
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="deleteByUuid" parameterType="java.lang.String">
+        update nurse
+        set deleted = true
+        where uuid = #{uuid,jdbcType=VARCHAR}
+    </update>
+    <update id="batchDeleteById" parameterType="java.util.List">
+        update nurse
+        set deleted = true
+        where id in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id,jdbcType=BIGINT}
+        </foreach>
+    </update>
+    <update id="batchDeleteByUuid" parameterType="java.util.List">
+        update nurse
+        set deleted = true
+        where uuid in
+        <foreach collection="list" item="uuid" open="(" separator="," close=")">
+            #{uuid,jdbcType=VARCHAR}
+        </foreach>
+    </update>
+    <select id="findAll" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from nurse as nu
+        where nu.deleted = false
+        <include refid="whereSql"/>
+        <include refid="orderSql"/>
+    </select>
+    <select id="count" resultType="java.lang.Integer">
+        select count(id)
+        from nurse as nu
+        where nu.deleted = false
+        <include refid="whereSql"/>
+    </select>
+    <select id="findByUuid" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from nurse as nu
+        where nu.uuid = #{uuid,jdbcType=VARCHAR}
+    </select>
+    <select id="findByUser" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from nurse as nu
+        where nu.deleted = false
+        and nu.wx_user = #{user,jdbcType=VARCHAR}
+    </select>
+    <select id="findByStatus" parameterType="java.lang.Byte" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from nurse as nu
+        where nu.deleted = false
+        and nu.service_status = true
+        and nu.status = #{status,jdbcType=TINYINT}
+    </select>
+    <select id="batchQueryByIds" parameterType="java.util.List" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from nurse as nu
+        where nu.id in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        and nu.deleted = false
+    </select>
+    <select id="batchQueryByUuids" parameterType="java.util.List" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from nurse as nu
+        where nu.id in
+        <foreach collection="list" item="uuid" open="(" separator="," close=")">
+            '${uuid}'
+        </foreach>
+        and nu.deleted = false
+    </select>
+    <sql id="whereSql">
+        <if test="condition.nickName != null and condition.nickName != ''">
+            and nu.nick_name like CONCAT('%',#{condition.nickName},'%')
+        </if>
+        <if test="condition.name != null and condition.name != ''">
+            and nu.name like CONCAT('%',#{condition.name},'%')
+        </if>
+        <if test="condition.age != null">
+            and nu.age = #{condition.age}
+        </if>
+        <if test="condition.sex != null and condition.sex != ''">
+            and nu.sex like CONCAT('%',#{condition.sex},'%')
+        </if>
+        <if test="condition.logo != null and condition.logo != ''">
+            and nu.logo like CONCAT('%',#{condition.logo},'%')
+        </if>
+        <if test="condition.certificatesType != null and condition.certificatesType != ''">
+            and nu.certificates_type like CONCAT('%',#{condition.certificatesType},'%')
+        </if>
+        <if test="condition.certificatesNo != null and condition.certificatesNo != ''">
+            and nu.certificates_no like CONCAT('%',#{condition.certificatesNo},'%')
+        </if>
+        <if test="condition.phone != null and condition.phone != ''">
+            and nu.phone like CONCAT('%',#{condition.phone},'%')
+        </if>
+        <if test="condition.idCardJust != null and condition.idCardJust != ''">
+            and nu.id_card_just like CONCAT('%',#{condition.idCardJust},'%')
+        </if>
+        <if test="condition.idCardAgainst != null and condition.idCardAgainst != ''">
+            and nu.id_card_against like CONCAT('%',#{condition.idCardAgainst},'%')
+        </if>
+        <if test="condition.professionImage != null and condition.professionImage != ''">
+            and nu.profession_image like CONCAT('%',#{condition.professionImage},'%')
+        </if>
+        <if test="condition.practiceImage != null and condition.practiceImage != ''">
+            and nu.practice_image like CONCAT('%',#{condition.practiceImage},'%')
+        </if>
+        <if test="condition.chestCardImage != null and condition.chestCardImage != ''">
+            and nu.chest_card_image like CONCAT('%',#{condition.chestCardImage},'%')
+        </if>
+        <if test="condition.address != null and condition.address != ''">
+            and nu.address like CONCAT('%',#{condition.address},'%')
+        </if>
+        <if test="condition.hospital != null and condition.hospital != ''">
+            and nu.hospital like CONCAT('%',#{condition.hospital},'%')
+        </if>
+        <if test="condition.evaluate != null and condition.evaluate != ''">
+            and nu.evaluate like CONCAT('%',#{condition.evaluate},'%')
+        </if>
+        <if test="condition.totalNumber != null">
+            and nu.total_number = #{condition.totalNumber}
+        </if>
+        <if test="condition.balance != null">
+            and nu.balance = #{condition.balance}
+        </if>
+        <if test="condition.score != null">
+            and nu.score = #{condition.score}
+        </if>
+        <if test="condition.remark != null and condition.remark != ''">
+            and nu.remark like CONCAT('%',#{condition.remark},'%')
+        </if>
+        <if test="condition.createTime != null">
+            <![CDATA[  and DATE_FORMAT(nu.create_time, '%Y-%m-%d') >=  DATE_FORMAT(#{createTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.updateTime != null">
+            <![CDATA[  and DATE_FORMAT(nu.update_time, '%Y-%m-%d') >=  DATE_FORMAT(#{updateTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.operator != null and condition.operator != ''">
+            and nu.operator like CONCAT('%',#{condition.operator},'%')
+        </if>
+        <if test="condition.description != null and condition.description != ''">
+            and nu.description like CONCAT('%',#{condition.description},'%')
+        </if>
+        <if test="condition.serviceStatus != null">
+            and nu.service_status = #{condition.serviceStatus}
+        </if>
+        <if test="condition.status != null">
+            and nu.status = #{condition.status}
+        </if>
+        <if test="condition.reserve != null and condition.reserve != ''">
+            and nu.reserve like CONCAT('%',#{condition.reserve},'%')
+        </if>
+    </sql>
+    <sql id="orderSql">
+        <if test="condition.field != null and condition.field != '' and condition.order != null and condition.order != ''">
+            order by nu.${condition.field} ${condition.order}
+        </if>
+        <if test="condition.field != null and condition.field != '' and (condition.order == null or condition.order == '')">
+            order by nu.${condition.field} desc
+        </if>
+        <if test="(condition.field == null or condition.field == '') and (condition.order == null or condition.order == '')">
+            order by nu.id desc
+        </if>
+    </sql>
+</mapper>

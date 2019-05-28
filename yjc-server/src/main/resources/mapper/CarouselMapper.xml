@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dk.data.dao.CarouselMapper">
+    <resultMap id="BaseResultMap" type="com.dk.data.entity.Carousel">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="uuid" jdbcType="VARCHAR" property="uuid" />
+        <result column="image" jdbcType="VARCHAR" property="image" />
+        <result column="url" jdbcType="VARCHAR" property="url" />
+        <result column="alone" jdbcType="TINYINT" property="alone" />
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+        <result column="operator" jdbcType="VARCHAR" property="operator" />
+        <result column="status" jdbcType="TINYINT" property="status" />
+        <result column="deleted" jdbcType="BIT" property="deleted" />
+        <result column="remark" jdbcType="VARCHAR" property="remark" />
+        <result column="reserve" jdbcType="VARCHAR" property="reserve" />
+    </resultMap>
+
+    <sql id="baseColumn">
+        car.id,car.uuid,car.image,car.url,car.alone,car.create_time,car.update_time,
+		car.operator,car.status,car.deleted,car.remark,car.reserve
+    </sql>
+
+    <insert id="batchInsert" parameterType="java.util.List" keyProperty="id" useGeneratedKeys="true">
+        insert into carousel (
+        uuid,image,url,alone,create_time,update_time,operator,status,deleted,remark,reserve
+        )
+        values
+        <foreach item="item" collection="list" separator=",">
+         (#{item.uuid,jdbcType=VARCHAR},#{item.image,jdbcType=VARCHAR},
+		#{item.url,jdbcType=VARCHAR},#{item.alone,jdbcType=TINYINT},#{item.createTime,jdbcType=TIMESTAMP},
+		#{item.updateTime,jdbcType=TIMESTAMP},#{item.operator,jdbcType=VARCHAR},
+		#{item.status,jdbcType=TINYINT},#{item.deleted,jdbcType=BIT},#{item.remark,jdbcType=VARCHAR},
+		#{item.reserve,jdbcType=VARCHAR})
+        </foreach>
+    </insert>
+    <update id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        update carousel
+        set deleted = true
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="deleteByUuid" parameterType="java.lang.String">
+        update carousel
+        set deleted = true
+        where uuid = #{uuid,jdbcType=VARCHAR}
+    </update>
+    <update id="batchDeleteById" parameterType="java.util.List">
+        update carousel
+        set deleted = true
+        where id in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id,jdbcType=BIGINT}
+        </foreach>
+    </update>
+    <update id="batchDeleteByUuid" parameterType="java.util.List">
+        update carousel
+        set deleted = true
+        where uuid in
+        <foreach collection="list" item="uuid" open="(" separator="," close=")">
+            #{uuid,jdbcType=VARCHAR}
+        </foreach>
+    </update>
+    <select id="findAll" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from carousel as car
+        where car.deleted = false
+        <include refid="whereSql"/>
+        <include refid="orderSql"/>
+    </select>
+    <select id="count" resultType="java.lang.Integer">
+        select count(id)
+        from carousel as car
+        where car.deleted = false
+        <include refid="whereSql"/>
+    </select>
+    <select id="findByUuid" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from carousel as car
+        where car.uuid = #{uuid}
+    </select>
+    <select id="batchQueryByIds" parameterType="java.util.List" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from carousel as car
+        where car.id in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        and car.deleted = false
+    </select>
+    <select id="batchQueryByUuids" parameterType="java.util.List" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from carousel as car
+        where car.id in
+        <foreach collection="list" item="uuid" open="(" separator="," close=")">
+            '${uuid}'
+        </foreach>
+        and car.deleted = false
+    </select>
+    <sql id="whereSql">
+        <if test="condition.image != null and condition.image != ''">
+            and car.image like CONCAT('%',#{condition.image},'%')
+        </if>
+        <if test="condition.url != null and condition.url != ''">
+            and car.url like CONCAT('%',#{condition.url},'%')
+        </if>
+        <if test="condition.alone != null">
+            and car.alone = #{condition.alone}
+        </if>
+        <if test="condition.createTime != null">
+            <![CDATA[  and DATE_FORMAT(car.create_time, '%Y-%m-%d') >=  DATE_FORMAT(#{createTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.updateTime != null">
+            <![CDATA[  and DATE_FORMAT(car.update_time, '%Y-%m-%d') >=  DATE_FORMAT(#{updateTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.operator != null and condition.operator != ''">
+            and car.operator like CONCAT('%',#{condition.operator},'%')
+        </if>
+        <if test="condition.status != null">
+            and car.status = #{condition.status}
+        </if>
+        <if test="condition.remark != null and condition.remark != ''">
+            and car.remark like CONCAT('%',#{condition.remark},'%')
+        </if>
+        <if test="condition.reserve != null and condition.reserve != ''">
+            and car.reserve like CONCAT('%',#{condition.reserve},'%')
+        </if>
+    </sql>
+    <sql id="orderSql">
+        <if test="condition.field != null and condition.field != '' and condition.order != null and condition.order != ''">
+            order by car.${condition.field} ${condition.order}
+        </if>
+        <if test="condition.field != null and condition.field != '' and (condition.order == null or condition.order == '')">
+            order by car.${condition.field} desc
+        </if>
+        <if test="(condition.field == null or condition.field == '') and (condition.order == null or condition.order == '')">
+            order by car.id desc
+        </if>
+    </sql>
+</mapper>

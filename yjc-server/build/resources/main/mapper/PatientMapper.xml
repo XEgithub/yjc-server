@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dk.data.dao.PatientMapper">
+    <resultMap id="BaseResultMap" type="com.dk.data.entity.Patient">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="uuid" jdbcType="VARCHAR" property="uuid" />
+        <result column="user" jdbcType="VARCHAR" property="user" />
+        <result column="name" jdbcType="VARCHAR" property="name" />
+        <result column="sex" jdbcType="VARCHAR" property="sex" />
+        <result column="age" jdbcType="INTEGER" property="age" />
+        <result column="weight" jdbcType="VARCHAR" property="weight" />
+        <result column="height" jdbcType="VARCHAR" property="height" />
+        <result column="phone" jdbcType="VARCHAR" property="phone" />
+        <result column="birthday" jdbcType="DATE" property="birthday" />
+        <result column="address" jdbcType="VARCHAR" property="address" />
+        <result column="certificates_type" jdbcType="VARCHAR" property="certificatesType" />
+        <result column="certificates_no" jdbcType="VARCHAR" property="certificatesNo" />
+        <result column="first" jdbcType="VARCHAR" property="first" />
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+        <result column="description" jdbcType="VARCHAR" property="description" />
+        <result column="status" jdbcType="TINYINT" property="status" />
+        <result column="remark" jdbcType="VARCHAR" property="remark" />
+        <result column="reserve" jdbcType="VARCHAR" property="reserve" />
+        <result column="deleted" jdbcType="BIT" property="deleted" />
+    </resultMap>
+
+    <sql id="baseColumn">
+        pa.id,pa.uuid,pa.user,pa.name,pa.sex,pa.age,pa.weight,pa.height,pa.phone,pa.birthday,
+		pa.address,pa.certificates_type,pa.certificates_no,pa.first,pa.create_time,
+		pa.update_time,pa.description,pa.status,pa.remark,pa.reserve,pa.deleted
+    </sql>
+
+    <insert id="batchInsert" parameterType="java.util.List" keyProperty="id" useGeneratedKeys="true">
+        insert into patient (
+        uuid,user,name,sex,age,weight,height,phone,birthday,address,certificates_type,
+		certificates_no,first,create_time,update_time,description,status,remark,reserve,deleted
+        )
+        values
+        <foreach item="item" collection="list" separator=",">
+         (#{item.uuid,jdbcType=VARCHAR},#{item.user,jdbcType=VARCHAR},
+		#{item.name,jdbcType=VARCHAR},#{item.sex,jdbcType=VARCHAR},#{item.age,jdbcType=INTEGER},
+		#{item.weight,jdbcType=VARCHAR},#{item.height,jdbcType=VARCHAR},#{item.phone,jdbcType=VARCHAR},
+		#{item.birthday,jdbcType=DATE},#{item.address,jdbcType=VARCHAR},
+		#{item.certificatesType,jdbcType=VARCHAR},#{item.certificatesNo,jdbcType=VARCHAR},
+		#{item.first,jdbcType=VARCHAR},#{item.createTime,jdbcType=TIMESTAMP},
+		#{item.updateTime,jdbcType=TIMESTAMP},#{item.description,jdbcType=VARCHAR},#{item.status,jdbcType=TINYINT},
+		#{item.remark,jdbcType=VARCHAR},#{item.reserve,jdbcType=VARCHAR},
+		#{item.deleted,jdbcType=BIT})
+        </foreach>
+    </insert>
+    <update id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        update patient
+        set deleted = true
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="deleteByUuid" parameterType="java.lang.String">
+        update patient
+        set deleted = true
+        where uuid = #{uuid,jdbcType=VARCHAR}
+    </update>
+    <update id="batchDeleteById" parameterType="java.util.List">
+        update patient
+        set deleted = true
+        where id in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id,jdbcType=BIGINT}
+        </foreach>
+    </update>
+    <update id="batchDeleteByUuid" parameterType="java.util.List">
+        update patient
+        set deleted = true
+        where uuid in
+        <foreach collection="list" item="uuid" open="(" separator="," close=")">
+            #{uuid,jdbcType=VARCHAR}
+        </foreach>
+    </update>
+    <select id="findAll" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from patient as pa
+        where pa.deleted = false
+        <include refid="whereSql"/>
+        <include refid="orderSql"/>
+    </select>
+    <select id="count" resultType="java.lang.Integer">
+        select count(id)
+        from patient as pa
+        where pa.deleted = false
+        <include refid="whereSql"/>
+    </select>
+    <select id="findByUuid" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from patient as pa
+        where pa.uuid = #{uuid}
+    </select>
+    <select id="batchQueryByIds" parameterType="java.util.List" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from patient as pa
+        where pa.id in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        and pa.deleted = false
+    </select>
+    <select id="batchQueryByUuids" parameterType="java.util.List" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from patient as pa
+        where pa.id in
+        <foreach collection="list" item="uuid" open="(" separator="," close=")">
+            '${uuid}'
+        </foreach>
+        and pa.deleted = false
+    </select>
+    <select id="findByOrderUuid" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from patient as pa
+        left join order_list ol
+        on pa.uuid = ol.patient
+        where ol.uuid = #{uuid,jdbcType=VARCHAR}
+    </select>
+    <sql id="whereSql">
+        <if test="condition.user != null and condition.user != ''">
+            and pa.user = #{condition.user}
+        </if>
+        <if test="condition.name != null and condition.name != ''">
+            and pa.name like CONCAT('%',#{condition.name},'%')
+        </if>
+        <if test="condition.sex != null and condition.sex != ''">
+            and pa.sex like CONCAT('%',#{condition.sex},'%')
+        </if>
+        <if test="condition.age != null">
+            and pa.age = #{condition.age}
+        </if>
+        <if test="condition.weight != null and condition.weight != ''">
+            and pa.weight like CONCAT('%',#{condition.weight},'%')
+        </if>
+        <if test="condition.height != null and condition.height != ''">
+            and pa.height like CONCAT('%',#{condition.height},'%')
+        </if>
+        <if test="condition.phone != null and condition.phone != ''">
+            and pa.phone like CONCAT('%',#{condition.phone},'%')
+        </if>
+        <if test="condition.birthday != null">
+            and pa.birthday = #{condition.birthday}
+        </if>
+        <if test="condition.address != null and condition.address != ''">
+            and pa.address like CONCAT('%',#{condition.address},'%')
+        </if>
+        <if test="condition.certificatesType != null and condition.certificatesType != ''">
+            and pa.certificates_type like CONCAT('%',#{condition.certificatesType},'%')
+        </if>
+        <if test="condition.certificatesNo != null and condition.certificatesNo != ''">
+            and pa.certificates_no like CONCAT('%',#{condition.certificatesNo},'%')
+        </if>
+        <if test="condition.first != null and condition.first != ''">
+            and pa.first like CONCAT('%',#{condition.first},'%')
+        </if>
+        <if test="condition.createTime != null">
+            <![CDATA[  and DATE_FORMAT(pa.create_time, '%Y-%m-%d') >=  DATE_FORMAT(#{createTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.updateTime != null">
+            <![CDATA[  and DATE_FORMAT(pa.update_time, '%Y-%m-%d') >=  DATE_FORMAT(#{updateTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.description != null and condition.description != ''">
+            and pa.description like CONCAT('%',#{condition.description},'%')
+        </if>
+        <if test="condition.status != null">
+            and pa.status = #{condition.status}
+        </if>
+        <if test="condition.remark != null and condition.remark != ''">
+            and pa.remark like CONCAT('%',#{condition.remark},'%')
+        </if>
+        <if test="condition.reserve != null and condition.reserve != ''">
+            and pa.reserve like CONCAT('%',#{condition.reserve},'%')
+        </if>
+    </sql>
+    <sql id="orderSql">
+        <if test="condition.field != null and condition.field != '' and condition.order != null and condition.order != ''">
+            order by pa.${condition.field} ${condition.order}
+        </if>
+        <if test="condition.field != null and condition.field != '' and (condition.order == null or condition.order == '')">
+            order by pa.${condition.field} desc
+        </if>
+        <if test="(condition.field == null or condition.field == '') and (condition.order == null or condition.order == '')">
+            order by pa.id desc
+        </if>
+    </sql>
+</mapper>

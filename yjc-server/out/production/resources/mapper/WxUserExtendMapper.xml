@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dk.data.dao.WxUserExtendMapper">
+    <resultMap id="BaseResultMap" type="com.dk.data.entity.WxUserExtend">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="uuid" jdbcType="VARCHAR" property="uuid" />
+        <result column="wx_user" jdbcType="VARCHAR" property="wxUser" />
+        <result column="image" jdbcType="VARCHAR" property="image" />
+        <result column="name" jdbcType="VARCHAR" property="name" />
+        <result column="nickname" jdbcType="VARCHAR" property="nickname" />
+        <result column="sex" jdbcType="VARCHAR" property="sex" />
+        <result column="age" jdbcType="INTEGER" property="age" />
+        <result column="weight" jdbcType="VARCHAR" property="weight" />
+        <result column="height" jdbcType="VARCHAR" property="height" />
+        <result column="phone" jdbcType="VARCHAR" property="phone" />
+        <result column="birthday" jdbcType="VARCHAR" property="birthday" />
+        <result column="address" jdbcType="VARCHAR" property="address" />
+        <result column="id_card" jdbcType="VARCHAR" property="idCard" />
+        <result column="identity" jdbcType="VARCHAR" property="identity" />
+        <result column="source" jdbcType="VARCHAR" property="source" />
+        <result column="integral" jdbcType="BIGINT" property="integral" />
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+        <result column="operator" jdbcType="VARCHAR" property="operator" />
+        <result column="description" jdbcType="VARCHAR" property="description" />
+        <result column="status" jdbcType="TINYINT" property="status" />
+        <result column="remark" jdbcType="VARCHAR" property="remark" />
+        <result column="reserve" jdbcType="VARCHAR" property="reserve" />
+        <result column="deleted" jdbcType="BIT" property="deleted" />
+    </resultMap>
+
+    <sql id="baseColumn">
+        wue.id,wue.uuid,wue.wx_user,wue.image,wue.name,wue.nickname,wue.sex,wue.age,wue.weight,
+		wue.height,wue.phone,wue.birthday,wue.address,wue.id_card,wue.identity,wue.source,
+		wue.integral,wue.create_time,wue.update_time,wue.operator,wue.description,wue.status,
+		wue.remark,wue.reserve,wue.deleted
+    </sql>
+
+    <insert id="batchInsert" parameterType="java.util.List" keyProperty="id" useGeneratedKeys="true">
+        insert into wx_user_extend (
+        uuid,wx_user,image,name,nickname,sex,age,weight,height,phone,birthday,address,id_card,
+		identity,source,integral,create_time,update_time,operator,description,status,remark,reserve,
+		deleted
+        )
+        values
+        <foreach item="item" collection="list" separator=",">
+         (#{item.uuid,jdbcType=VARCHAR},#{item.wxUser,jdbcType=VARCHAR},
+		#{item.image,jdbcType=VARCHAR},#{item.name,jdbcType=VARCHAR},#{item.nickname,jdbcType=VARCHAR},
+		#{item.sex,jdbcType=VARCHAR},#{item.age,jdbcType=INTEGER},#{item.weight,jdbcType=VARCHAR},
+		#{item.height,jdbcType=VARCHAR},#{item.phone,jdbcType=VARCHAR},
+		#{item.birthday,jdbcType=VARCHAR},#{item.address,jdbcType=VARCHAR},#{item.idCard,jdbcType=VARCHAR},
+		#{item.identity,jdbcType=VARCHAR},#{item.source,jdbcType=VARCHAR},
+		#{item.integral,jdbcType=BIGINT},#{item.createTime,jdbcType=TIMESTAMP},
+		#{item.updateTime,jdbcType=TIMESTAMP},#{item.operator,jdbcType=VARCHAR},#{item.description,jdbcType=VARCHAR},
+		#{item.status,jdbcType=TINYINT},#{item.remark,jdbcType=VARCHAR},
+		#{item.reserve,jdbcType=VARCHAR},#{item.deleted,jdbcType=BIT})
+        </foreach>
+    </insert>
+    <update id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        update wx_user_extend
+        set deleted = true
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="deleteByUuid" parameterType="java.lang.String">
+        update wx_user_extend
+        set deleted = true
+        where uuid = #{uuid,jdbcType=VARCHAR}
+    </update>
+    <update id="batchDeleteById" parameterType="java.util.List">
+        update wx_user_extend
+        set deleted = true
+        where id in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id,jdbcType=BIGINT}
+        </foreach>
+    </update>
+    <update id="batchDeleteByUuid" parameterType="java.util.List">
+        update wx_user_extend
+        set deleted = true
+        where uuid in
+        <foreach collection="list" item="uuid" open="(" separator="," close=")">
+            #{uuid,jdbcType=VARCHAR}
+        </foreach>
+    </update>
+    <select id="findAll" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from wx_user_extend as wue
+        where wue.deleted = false
+        <include refid="whereSql"/>
+        <include refid="orderSql"/>
+    </select>
+    <select id="count" resultType="java.lang.Integer">
+        select count(id)
+        from wx_user_extend as wue
+        where wue.deleted = false
+        <include refid="whereSql"/>
+    </select>
+    <select id="findByUuid" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from wx_user_extend as wue
+        where wue.uuid = #{uuid,jdbcType=VARCHAR}
+    </select>
+    <select id="findByWxUserUuid" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from wx_user_extend as wue
+        where wue.wx_user = #{uuid,jdbcType=VARCHAR}
+    </select>
+    <select id="batchQueryByIds" parameterType="java.util.List" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from wx_user_extend as wue
+        where wue.id in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        and wue.deleted = false
+    </select>
+    <select id="batchQueryByUuids" parameterType="java.util.List" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from wx_user_extend as wue
+        where wue.id in
+        <foreach collection="list" item="uuid" open="(" separator="," close=")">
+            '${uuid}'
+        </foreach>
+        and wue.deleted = false
+    </select>
+    <sql id="whereSql">
+        <if test="condition.wxUser != null and condition.wxUser != ''">
+            and wue.wx_user like CONCAT('%',#{condition.wxUser},'%')
+        </if>
+        <if test="condition.image != null and condition.image != ''">
+            and wue.image like CONCAT('%',#{condition.image},'%')
+        </if>
+        <if test="condition.name != null and condition.name != ''">
+            and wue.name like CONCAT('%',#{condition.name},'%')
+        </if>
+        <if test="condition.nickname != null and condition.nickname != ''">
+            and wue.nickname like CONCAT('%',#{condition.nickname},'%')
+        </if>
+        <if test="condition.sex != null and condition.sex != ''">
+            and wue.sex like CONCAT('%',#{condition.sex},'%')
+        </if>
+        <if test="condition.age != null">
+            and wue.age = #{condition.age}
+        </if>
+        <if test="condition.weight != null and condition.weight != ''">
+            and wue.weight like CONCAT('%',#{condition.weight},'%')
+        </if>
+        <if test="condition.height != null and condition.height != ''">
+            and wue.height like CONCAT('%',#{condition.height},'%')
+        </if>
+        <if test="condition.phone != null and condition.phone != ''">
+            and wue.phone like CONCAT('%',#{condition.phone},'%')
+        </if>
+        <if test="condition.birthday != null and condition.birthday != ''">
+            and wue.birthday like CONCAT('%',#{condition.birthday},'%')
+        </if>
+        <if test="condition.address != null and condition.address != ''">
+            and wue.address like CONCAT('%',#{condition.address},'%')
+        </if>
+        <if test="condition.idCard != null and condition.idCard != ''">
+            and wue.id_card like CONCAT('%',#{condition.idCard},'%')
+        </if>
+        <if test="condition.identity != null and condition.identity != ''">
+            and wue.identity like CONCAT('%',#{condition.identity},'%')
+        </if>
+        <if test="condition.source != null and condition.source != ''">
+            and wue.source like CONCAT('%',#{condition.source},'%')
+        </if>
+        <if test="condition.integral != null">
+            and wue.integral = #{condition.integral}
+        </if>
+        <if test="condition.createTime != null">
+            <![CDATA[  and DATE_FORMAT(wue.create_time, '%Y-%m-%d') >=  DATE_FORMAT(#{createTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.updateTime != null">
+            <![CDATA[  and DATE_FORMAT(wue.update_time, '%Y-%m-%d') >=  DATE_FORMAT(#{updateTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.operator != null and condition.operator != ''">
+            and wue.operator like CONCAT('%',#{condition.operator},'%')
+        </if>
+        <if test="condition.description != null and condition.description != ''">
+            and wue.description like CONCAT('%',#{condition.description},'%')
+        </if>
+        <if test="condition.status != null">
+            and wue.status = #{condition.status}
+        </if>
+        <if test="condition.remark != null and condition.remark != ''">
+            and wue.remark like CONCAT('%',#{condition.remark},'%')
+        </if>
+        <if test="condition.reserve != null and condition.reserve != ''">
+            and wue.reserve like CONCAT('%',#{condition.reserve},'%')
+        </if>
+    </sql>
+    <sql id="orderSql">
+        <if test="condition.field != null and condition.field != '' and condition.order != null and condition.order != ''">
+            order by wue.${condition.field} ${condition.order}
+        </if>
+        <if test="condition.field != null and condition.field != '' and (condition.order == null or condition.order == '')">
+            order by wue.${condition.field} desc
+        </if>
+        <if test="(condition.field == null or condition.field == '') and (condition.order == null or condition.order == '')">
+            order by wue.id desc
+        </if>
+    </sql>
+</mapper>

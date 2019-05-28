@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dk.data.dao.BillMapper">
+    <resultMap id="BaseResultMap" type="com.dk.data.entity.Bill">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="uuid" jdbcType="VARCHAR" property="uuid" />
+        <result column="nurse" jdbcType="VARCHAR" property="nurse" />
+        <result column="appointment" jdbcType="VARCHAR" property="appointment" />
+        <result column="name" jdbcType="VARCHAR" property="name" />
+        <result column="price" jdbcType="DECIMAL" property="price" />
+        <result column="type" jdbcType="VARCHAR" property="type" />
+        <result column="balance" jdbcType="DECIMAL" property="balance" />
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+        <result column="status" jdbcType="TINYINT" property="status" />
+        <result column="remark" jdbcType="VARCHAR" property="remark" />
+        <result column="reserve" jdbcType="VARCHAR" property="reserve" />
+        <result column="deleted" jdbcType="BIT" property="deleted" />
+    </resultMap>
+
+    <sql id="baseColumn">
+        bi.id,bi.uuid,bi.nurse,bi.appointment,bi.name,bi.price,bi.type,bi.balance,
+		bi.create_time,bi.update_time,bi.status,bi.remark,bi.reserve,bi.deleted
+    </sql>
+
+    <insert id="batchInsert" parameterType="java.util.List" keyProperty="id" useGeneratedKeys="true">
+        insert into bill (
+        uuid,nurse,appointment,name,price,type,balance,create_time,update_time,status,remark,
+		reserve,deleted
+        )
+        values
+        <foreach item="item" collection="list" separator=",">
+         (#{item.uuid,jdbcType=VARCHAR},#{item.nurse,jdbcType=VARCHAR},
+		#{item.appointment,jdbcType=VARCHAR},#{item.name,jdbcType=VARCHAR},#{item.price,jdbcType=DECIMAL},
+		#{item.type,jdbcType=VARCHAR},#{item.balance,jdbcType=DECIMAL},
+		#{item.createTime,jdbcType=TIMESTAMP},#{item.updateTime,jdbcType=TIMESTAMP},
+		#{item.status,jdbcType=TINYINT},#{item.remark,jdbcType=VARCHAR},#{item.reserve,jdbcType=VARCHAR},
+		#{item.deleted,jdbcType=BIT})
+        </foreach>
+    </insert>
+    <update id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        update bill
+        set deleted = true
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="deleteByUuid" parameterType="java.lang.String">
+        update bill
+        set deleted = true
+        where uuid = #{uuid,jdbcType=VARCHAR}
+    </update>
+    <update id="batchDeleteById" parameterType="java.util.List">
+        update bill
+        set deleted = true
+        where id in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id,jdbcType=BIGINT}
+        </foreach>
+    </update>
+    <update id="batchDeleteByUuid" parameterType="java.util.List">
+        update bill
+        set deleted = true
+        where uuid in
+        <foreach collection="list" item="uuid" open="(" separator="," close=")">
+            #{uuid,jdbcType=VARCHAR}
+        </foreach>
+    </update>
+    <select id="findAll" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from bill as bi
+        where bi.deleted = false
+        <include refid="whereSql"/>
+        <include refid="orderSql"/>
+    </select>
+    <select id="count" resultType="java.lang.Integer">
+        select count(id)
+        from bill as bi
+        where bi.deleted = false
+        <include refid="whereSql"/>
+    </select>
+    <select id="findByUuid" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from bill as bi
+        where bi.uuid = #{uuid}
+    </select>
+    <select id="findByNurse" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from bill as bi
+        where bi.nurse = #{nurse}
+    </select>
+    <select id="batchQueryByIds" parameterType="java.util.List" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from bill as bi
+        where bi.id in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        and bi.deleted = false
+    </select>
+    <select id="batchQueryByUuids" parameterType="java.util.List" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from bill as bi
+        where bi.id in
+        <foreach collection="list" item="uuid" open="(" separator="," close=")">
+            '${uuid}'
+        </foreach>
+        and bi.deleted = false
+    </select>
+    <sql id="whereSql">
+        <if test="condition.nurse != null and condition.nurse != ''">
+            and bi.nurse like CONCAT('%',#{condition.nurse},'%')
+        </if>
+        <if test="condition.appointment != null and condition.appointment != ''">
+            and bi.appointment like CONCAT('%',#{condition.appointment},'%')
+        </if>
+        <if test="condition.name != null and condition.name != ''">
+            and bi.name like CONCAT('%',#{condition.name},'%')
+        </if>
+        <if test="condition.price != null">
+            and bi.price = #{condition.price}
+        </if>
+        <if test="condition.type != null and condition.type != ''">
+            and bi.type like CONCAT('%',#{condition.type},'%')
+        </if>
+        <if test="condition.balance != null">
+            and bi.balance = #{condition.balance}
+        </if>
+        <if test="condition.createTime != null">
+            <![CDATA[  and DATE_FORMAT(bi.create_time, '%Y-%m-%d') >=  DATE_FORMAT(#{createTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.updateTime != null">
+            <![CDATA[  and DATE_FORMAT(bi.update_time, '%Y-%m-%d') >=  DATE_FORMAT(#{updateTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.status != null">
+            and bi.status = #{condition.status}
+        </if>
+        <if test="condition.remark != null and condition.remark != ''">
+            and bi.remark like CONCAT('%',#{condition.remark},'%')
+        </if>
+        <if test="condition.reserve != null and condition.reserve != ''">
+            and bi.reserve like CONCAT('%',#{condition.reserve},'%')
+        </if>
+    </sql>
+    <sql id="orderSql">
+        <if test="condition.field != null and condition.field != '' and condition.order != null and condition.order != ''">
+            order by bi.${condition.field} ${condition.order}
+        </if>
+        <if test="condition.field != null and condition.field != '' and (condition.order == null or condition.order == '')">
+            order by bi.${condition.field} desc
+        </if>
+        <if test="(condition.field == null or condition.field == '') and (condition.order == null or condition.order == '')">
+            order by bi.id desc
+        </if>
+    </sql>
+</mapper>

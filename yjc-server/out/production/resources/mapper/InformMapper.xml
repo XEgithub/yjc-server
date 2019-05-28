@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dk.data.dao.InformMapper">
+    <resultMap id="BaseResultMap" type="com.dk.data.entity.Inform">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="uuid" jdbcType="VARCHAR" property="uuid" />
+        <result column="user" jdbcType="VARCHAR" property="user" />
+        <result column="title" jdbcType="VARCHAR" property="title" />
+        <result column="content" jdbcType="VARCHAR" property="content" />
+        <result column="type" jdbcType="TINYINT" property="type" />
+        <result column="mark_read" jdbcType="VARCHAR" property="markRead" />
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+        <result column="status" jdbcType="TINYINT" property="status" />
+        <result column="reserve" jdbcType="VARCHAR" property="reserve" />
+        <result column="deleted" jdbcType="BIT" property="deleted" />
+    </resultMap>
+
+    <sql id="baseColumn">
+        inf.id,inf.uuid,inf.user,inf.title,inf.content,inf.type,inf.mark_read,inf.create_time,
+		inf.update_time,inf.status,inf.reserve,inf.deleted
+    </sql>
+
+    <insert id="batchInsert" parameterType="java.util.List" keyProperty="id" useGeneratedKeys="true">
+        insert into inform (
+        uuid,user,title,content,type,mark_read,create_time,update_time,status,reserve,deleted
+        )
+        values
+        <foreach item="item" collection="list" separator=",">
+         (#{item.uuid,jdbcType=VARCHAR},#{item.user,jdbcType=VARCHAR},
+		#{item.title,jdbcType=VARCHAR},#{item.content,jdbcType=VARCHAR},
+        #{item.type,jdbcType=TINYINT},#{item.markRead,jdbcType=VARCHAR},
+		#{item.createTime,jdbcType=TIMESTAMP},#{item.updateTime,jdbcType=TIMESTAMP},
+		#{item.status,jdbcType=TINYINT},#{item.reserve,jdbcType=VARCHAR},#{item.deleted,jdbcType=BIT})
+        </foreach>
+    </insert>
+    <update id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        update inform
+        set deleted = true
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="deleteByUuid" parameterType="java.lang.String">
+        update inform
+        set deleted = true
+        where uuid = #{uuid,jdbcType=VARCHAR}
+    </update>
+    <update id="batchDeleteById" parameterType="java.util.List">
+        update inform
+        set deleted = true
+        where id in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id,jdbcType=BIGINT}
+        </foreach>
+    </update>
+    <update id="batchDeleteByUuid" parameterType="java.util.List">
+        update inform
+        set deleted = true
+        where uuid in
+        <foreach collection="list" item="uuid" open="(" separator="," close=")">
+            #{uuid,jdbcType=VARCHAR}
+        </foreach>
+    </update>
+
+    <update id="readByUuid" parameterType="java.lang.String">
+        update inform
+        set mark_read = '1'
+        where uuid = #{uuid,jdbcType=VARCHAR}
+    </update>
+
+    <select id="findAll" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from inform as inf
+        where inf.deleted = false
+        <include refid="whereSql"/>
+        <include refid="orderSql"/>
+    </select>
+    <select id="count" resultType="java.lang.Integer">
+        select count(id)
+        from inform as inf
+        where inf.deleted = false
+        <include refid="whereSql"/>
+    </select>
+    <select id="findByUuid" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from inform as inf
+        where inf.uuid = #{uuid,jdbcType=VARCHAR}
+    </select>
+    <select id="batchQueryByIds" parameterType="java.util.List" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from inform as inf
+        where inf.id in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id,jdbcType="BIGINT"}
+        </foreach>
+        and inf.deleted = false
+    </select>
+    <select id="batchQueryByUuids" parameterType="java.util.List" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from inform as inf
+        where inf.id in
+        <foreach collection="list" item="uuid" open="(" separator="," close=")">
+            ${uuid,jdbcType=VARCHAR}
+        </foreach>
+        and inf.deleted = false
+    </select>
+    <sql id="whereSql">
+        <if test="condition.user != null and condition.user != ''">
+            and inf.user = #{condition.user}
+        </if>
+        <if test="condition.title != null and condition.title != ''">
+            and inf.title like CONCAT('%',#{condition.title},'%')
+        </if>
+        <if test="condition.content != null and condition.content != ''">
+            and inf.content like CONCAT('%',#{condition.content},'%')
+        </if>
+        <if test="condition.type != null">
+            and inf.type = #{condition.type}
+        </if>
+        <if test="condition.markRead != null and condition.markRead != ''">
+            and inf.mark_read = #{condition.markRead}
+        </if>
+        <if test="condition.createTime != null">
+            <![CDATA[  and DATE_FORMAT(inf.create_time, '%Y-%m-%d') >=  DATE_FORMAT(#{createTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.updateTime != null">
+            <![CDATA[  and DATE_FORMAT(inf.update_time, '%Y-%m-%d') >=  DATE_FORMAT(#{updateTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.status != null">
+            and inf.status = #{condition.status}
+        </if>
+        <if test="condition.reserve != null and condition.reserve != ''">
+            and inf.reserve like CONCAT('%',#{condition.reserve},'%')
+        </if>
+    </sql>
+    <sql id="orderSql">
+        <if test="condition.field != null and condition.field != '' and condition.order != null and condition.order != ''">
+            order by inf.${condition.field} ${condition.order}
+        </if>
+        <if test="condition.field != null and condition.field != '' and (condition.order == null or condition.order == '')">
+            order by inf.${condition.field} desc
+        </if>
+        <if test="(condition.field == null or condition.field == '') and (condition.order == null or condition.order == '')">
+            order by inf.id desc
+        </if>
+    </sql>
+</mapper>

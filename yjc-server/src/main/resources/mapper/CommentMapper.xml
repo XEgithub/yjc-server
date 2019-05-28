@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dk.data.dao.CommentMapper">
+    <resultMap id="BaseResultMap" type="com.dk.data.entity.Comment">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="uuid" jdbcType="VARCHAR" property="uuid" />
+        <result column="order_list" jdbcType="VARCHAR" property="orderList" />
+        <result column="project" jdbcType="VARCHAR" property="project" />
+        <result column="type" jdbcType="VARCHAR" property="type" />
+        <result column="user" jdbcType="VARCHAR" property="user" />
+        <result column="content" jdbcType="VARCHAR" property="content" />
+        <result column="grade" jdbcType="VARCHAR" property="grade" />
+        <result column="patient" jdbcType="VARCHAR" property="patient" />
+        <result column="nurse" jdbcType="VARCHAR" property="nurse" />
+        <result column="nurse_phone" jdbcType="VARCHAR" property="nursePhone" />
+        <result column="image" jdbcType="VARCHAR" property="image" />
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+        <result column="description" jdbcType="VARCHAR" property="description" />
+        <result column="status" jdbcType="TINYINT" property="status" />
+        <result column="reserve" jdbcType="VARCHAR" property="reserve" />
+        <result column="deleted" jdbcType="BIT" property="deleted" />
+    </resultMap>
+
+    <sql id="baseColumn">
+        co.id,co.uuid,co.order_list,co.project,co.type,co.user,co.content,co.grade,co.patient,co.nurse,co.nurse_phone,
+		co.image,co.create_time,co.update_time,co.description,co.status,co.reserve,co.deleted
+    </sql>
+
+    <insert id="batchInsert" parameterType="java.util.List" keyProperty="id" useGeneratedKeys="true">
+        insert into comment (
+        uuid,order_list,project,type,user,content,grade,patient,nurse,nurse_phone,image,create_time,update_time,
+		description,status,reserve,deleted
+        )
+        values
+        <foreach item="item" collection="list" separator=",">
+         (#{item.uuid,jdbcType=VARCHAR},#{item.orderList,jdbcType=VARCHAR},
+		#{item.project,jdbcType=VARCHAR},#{item.type,jdbcType=VARCHAR},
+		#{item.user,jdbcType=VARCHAR},#{item.content,jdbcType=VARCHAR},
+		#{item.grade,jdbcType=VARCHAR},#{item.patient,jdbcType=VARCHAR},
+		#{item.nurse,jdbcType=VARCHAR},#{item.nursePhone,jdbcType=VARCHAR},
+		#{item.image,jdbcType=VARCHAR},#{item.createTime,jdbcType=TIMESTAMP},
+		#{item.updateTime,jdbcType=TIMESTAMP},#{item.description,jdbcType=VARCHAR},
+		#{item.status,jdbcType=TINYINT},#{item.reserve,jdbcType=VARCHAR},#{item.deleted,jdbcType=BIT})
+        </foreach>
+    </insert>
+    <update id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        update comment
+        set deleted = true
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="deleteByUuid" parameterType="java.lang.String">
+        update comment
+        set deleted = true
+        where uuid = #{uuid,jdbcType=VARCHAR}
+    </update>
+    <update id="batchDeleteById" parameterType="java.util.List">
+        update comment
+        set deleted = true
+        where id in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id,jdbcType=BIGINT}
+        </foreach>
+    </update>
+    <update id="batchDeleteByUuid" parameterType="java.util.List">
+        update comment
+        set deleted = true
+        where uuid in
+        <foreach collection="list" item="uuid" open="(" separator="," close=")">
+            #{uuid,jdbcType=VARCHAR}
+        </foreach>
+    </update>
+    <update id="deleteByUserAndOrder" parameterType="java.lang.String">
+        update comment
+        set deleted = true
+        where user = #{user,jdbcType=VARCHAR}
+        and order_list = #{uuid,jdbcType=VARCHAR}
+    </update>
+    <select id="findAll" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from comment as co
+        where co.deleted = false
+        <include refid="whereSql"/>
+        <include refid="orderSql"/>
+    </select>
+    <select id="getAll" resultMap="BaseResultMap">
+        select co.id,co.uuid,co.order_list,co.project,co.type,wu.nickname user,co.content,co.grade,co.patient,co.nurse,co.nurse_phone,
+        co.image,co.create_time,co.update_time,co.description,co.status,co.reserve,co.deleted
+        from comment as co
+        join wx_user wu
+        on co.user = wu.uuid
+        where co.deleted = false
+        <include refid="whereSql"/>
+        <include refid="orderSql"/>
+    </select>
+    <select id="count" resultType="java.lang.Integer">
+        select count(id)
+        from comment as co
+        where co.deleted = false
+        <include refid="whereSql"/>
+    </select>
+    <select id="findByUuid" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from comment as co
+        where co.uuid = #{uuid}
+    </select>
+    <select id="batchQueryByIds" parameterType="java.util.List" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from comment as co
+        where co.id in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        and co.deleted = false
+    </select>
+    <select id="batchQueryByUuids" parameterType="java.util.List" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from comment as co
+        where co.id in
+        <foreach collection="list" item="uuid" open="(" separator="," close=")">
+            '${uuid}'
+        </foreach>
+        and co.deleted = false
+    </select>
+    <select id="findByUserAndOrder" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from comment as co
+        where co.id in (
+          select max(id)
+          from comment
+          where user = #{user,jdbcType=VARCHAR}
+          and order_list = #{uuid,jdbcType=VARCHAR}
+          group by order_list)
+    </select>
+    <select id="findByNurse" resultMap="BaseResultMap">
+        select co.id,co.uuid,wu.headimgurl headimgurl,wu.nickname user,co.create_time,
+               co.grade,ol.order_no order_list,a.type type,co.content,co.image
+        from comment co
+        join wx_user wu
+        on co.user = wu.uuid
+        join order_list ol
+        on co.order_list = ol.uuid
+        join appointment a
+        on a.order_list = ol.uuid
+        where co.id in (
+            select max(c.id)
+            from comment c
+            join order_list ol
+            on c.order_list = ol.uuid
+            join appointment a
+            on a.order_list = ol.uuid
+            join nurse_appointment na
+            on na.appointment = a.uuid and na.nurse = #{condition.nurse,jdbcType=VARCHAR}
+            group by c.order_list
+        )
+    </select>
+    <select id="countByNurse" resultType="java.lang.Integer">
+        select count(id)
+        from comment
+        where id in (
+            select max(c.id)
+            from comment c
+            join order_list ol
+            on c.order_list = ol.uuid
+            join appointment a
+            on a.order_list = ol.uuid
+            join nurse_appointment na
+            on na.appointment = a.uuid and na.nurse = #{condition.nurse,jdbcType=VARCHAR}
+            group by c.order_list
+        )
+    </select>
+    <select id="countByUser" resultType="java.lang.Integer">
+        select count(id)
+        from comment as co
+        where co.id in (
+        select max(id)
+        from comment
+        where user = #{user,jdbcType=VARCHAR}
+        group by order_list)
+    </select>
+    <sql id="whereSql">
+        <if test="condition.orderList != null and condition.orderList != ''">
+            and co.order_list like CONCAT('%',#{condition.orderList},'%')
+        </if>
+        <if test="condition.project != null and condition.project != ''">
+            and co.project = #{condition.project}
+        </if>
+        <if test="condition.type != null and condition.type != ''">
+            and co.type like CONCAT('%',#{condition.type},'%')
+        </if>
+        <if test="condition.user != null and condition.user != ''">
+            and co.user like CONCAT('%',#{condition.user},'%')
+        </if>
+        <if test="condition.content != null and condition.content != ''">
+            and co.content like CONCAT('%',#{condition.content},'%')
+        </if>
+        <if test="condition.grade != null and condition.grade != ''">
+            and co.grade like CONCAT('%',#{condition.grade},'%')
+        </if>
+        <if test="condition.patient != null and condition.patient != ''">
+            and co.patient like CONCAT('%',#{condition.patient},'%')
+        </if>
+        <if test="condition.nurse != null and condition.nurse != ''">
+            and co.nurse like CONCAT('%',#{condition.nurse},'%')
+        </if>
+        <if test="condition.image != null and condition.image != ''">
+            and co.image like CONCAT('%',#{condition.image},'%')
+        </if>
+        <if test="condition.createTime != null">
+            <![CDATA[  and DATE_FORMAT(co.create_time, '%Y-%m-%d') >=  DATE_FORMAT(#{createTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.updateTime != null">
+            <![CDATA[  and DATE_FORMAT(co.update_time, '%Y-%m-%d') >=  DATE_FORMAT(#{updateTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.description != null and condition.description != ''">
+            and co.description like CONCAT('%',#{condition.description},'%')
+        </if>
+        <if test="condition.status != null">
+            and co.status = #{condition.status}
+        </if>
+        <if test="condition.reserve != null and condition.reserve != ''">
+            and co.reserve like CONCAT('%',#{condition.reserve},'%')
+        </if>
+    </sql>
+    <sql id="orderSql">
+        <if test="condition.field != null and condition.field != '' and condition.order != null and condition.order != ''">
+            order by co.${condition.field} ${condition.order}
+        </if>
+        <if test="condition.field != null and condition.field != '' and (condition.order == null or condition.order == '')">
+            order by co.${condition.field} desc
+        </if>
+        <if test="(condition.field == null or condition.field == '') and (condition.order == null or condition.order == '')">
+            order by co.id desc
+        </if>
+    </sql>
+</mapper>

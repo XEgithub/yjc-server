@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dk.data.dao.CouponMapper">
+    <resultMap id="BaseResultMap" type="com.dk.data.entity.Coupon">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="uuid" jdbcType="VARCHAR" property="uuid" />
+        <result column="name" jdbcType="VARCHAR" property="name" />
+        <result column="user" jdbcType="VARCHAR" property="user" />
+        <result column="min_price" jdbcType="DECIMAL" property="minPrice" />
+        <result column="coupon_price" jdbcType="DECIMAL" property="couponPrice" />
+        <result column="need_integral" jdbcType="BIGINT" property="needIntegral" />
+        <result column="type" jdbcType="BIT" property="type" />
+        <result column="application" jdbcType="VARCHAR" property="application" />
+        <result column="hospital" jdbcType="BIGINT" property="hospital" />
+        <result column="begin_time" jdbcType="TIMESTAMP" property="beginTime" />
+        <result column="expire_time" jdbcType="TIMESTAMP" property="expireTime" />
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+        <result column="operator" jdbcType="VARCHAR" property="operator" />
+        <result column="description" jdbcType="VARCHAR" property="description" />
+        <result column="remark" jdbcType="VARCHAR" property="remark" />
+        <result column="status" jdbcType="TINYINT" property="status" />
+        <result column="reserve" jdbcType="VARCHAR" property="reserve" />
+        <result column="deleted" jdbcType="BIT" property="deleted" />
+    </resultMap>
+
+    <sql id="baseColumn">
+        co.id,co.uuid,co.name,co.user,co.min_price,co.coupon_price,co.need_integral,co.type,
+		co.application,co.hospital,co.begin_time,co.expire_time,co.create_time,co.update_time,
+		co.operator,co.description,co.remark,co.status,co.reserve,co.deleted
+    </sql>
+
+    <insert id="batchInsert" parameterType="java.util.List" keyProperty="id" useGeneratedKeys="true">
+        insert into coupon (
+        uuid,name,user,min_price,coupon_price,need_integral,type,application,hospital,begin_time,
+		expire_time,create_time,update_time,operator,description,remark,status,reserve,deleted
+        )
+        values
+        <foreach item="item" collection="list" separator=",">
+         (#{item.uuid,jdbcType=VARCHAR},#{item.name,jdbcType=VARCHAR},
+		#{item.user,jdbcType=VARCHAR},#{item.minPrice,jdbcType=DECIMAL},#{item.couponPrice,jdbcType=DECIMAL},
+		#{item.needIntegral,jdbcType=BIGINT},#{item.type,jdbcType=BIT},
+		#{item.application,jdbcType=VARCHAR},#{item.hospital,jdbcType=BIGINT},
+		#{item.beginTime,jdbcType=TIMESTAMP},#{item.expireTime,jdbcType=TIMESTAMP},#{item.createTime,jdbcType=TIMESTAMP},
+		#{item.updateTime,jdbcType=TIMESTAMP},#{item.operator,jdbcType=VARCHAR},
+		#{item.description,jdbcType=VARCHAR},#{item.remark,jdbcType=VARCHAR},
+		#{item.status,jdbcType=TINYINT},#{item.reserve,jdbcType=VARCHAR},#{item.deleted,jdbcType=BIT})
+        </foreach>
+    </insert>
+    <update id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        update coupon
+        set deleted = true
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="deleteByUuid" parameterType="java.lang.String">
+        update coupon
+        set deleted = true
+        where uuid = #{uuid,jdbcType=VARCHAR}
+    </update>
+    <update id="batchDeleteById" parameterType="java.util.List">
+        update coupon
+        set deleted = true
+        where id in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id,jdbcType=BIGINT}
+        </foreach>
+    </update>
+    <update id="batchDeleteByUuid" parameterType="java.util.List">
+        update coupon
+        set deleted = true
+        where uuid in
+        <foreach collection="list" item="uuid" open="(" separator="," close=")">
+            #{uuid,jdbcType=VARCHAR}
+        </foreach>
+    </update>
+    <select id="findAll" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from coupon as co
+        where co.deleted = false
+        <include refid="whereSql"/>
+        <include refid="orderSql"/>
+    </select>
+    <select id="findUsableAll" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from coupon as co
+        where co.deleted = false
+        <include refid="whereSql"/>
+        <include refid="orderSql"/>
+    </select>
+    <select id="count" resultType="java.lang.Integer">
+        select count(id)
+        from coupon as co
+        where co.deleted = false
+        <include refid="whereSql"/>
+    </select>
+    <select id="findByUuid" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from coupon as co
+        where co.uuid = #{uuid}
+    </select>
+    <select id="batchQueryByIds" parameterType="java.util.List" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from coupon as co
+        where co.id in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        and co.deleted = false
+    </select>
+    <select id="batchQueryByUuids" parameterType="java.util.List" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from coupon as co
+        where co.id in
+        <foreach collection="list" item="uuid" open="(" separator="," close=")">
+            '${uuid}'
+        </foreach>
+        and co.deleted = false
+    </select>
+    <sql id="whereSql">
+        <if test="condition.name != null and condition.name != ''">
+            and co.name like CONCAT('%',#{condition.name},'%')
+        </if>
+        <if test="condition.user != null and condition.user != ''">
+            and co.user = #{condition.user}
+        </if>
+        <if test="condition.minPrice != null">
+            and co.min_price &lt;= #{condition.minPrice}
+        </if>
+        <if test="condition.couponPrice != null">
+            and co.coupon_price = #{condition.couponPrice}
+        </if>
+        <if test="condition.needIntegral != null and condition.needIntegral != ''">
+            and co.need_integral like CONCAT('%',#{condition.needIntegral},'%')
+        </if>
+        <if test="condition.type != null">
+            and co.type = #{condition.type}
+        </if>
+        <if test="condition.application != null and condition.application != ''">
+            and co.application like CONCAT('%',#{condition.application},'%')
+        </if>
+        <if test="condition.hospital != null">
+            and co.hospital = #{condition.hospital}
+        </if>
+        <if test="condition.beginTime != null">
+            and co.begin_time &lt;= #{condition.beginTime}
+        </if>
+        <if test="condition.expireTime != null">
+            and co.expire_time &gt;= #{condition.expireTime}
+        </if>
+        <if test="condition.createTime != null">
+            <![CDATA[  and DATE_FORMAT(co.create_time, '%Y-%m-%d') >=  DATE_FORMAT(#{createTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.updateTime != null">
+            <![CDATA[  and DATE_FORMAT(co.update_time, '%Y-%m-%d') >=  DATE_FORMAT(#{updateTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.operator != null and condition.operator != ''">
+            and co.operator like CONCAT('%',#{condition.operator},'%')
+        </if>
+        <if test="condition.description != null and condition.description != ''">
+            and co.description like CONCAT('%',#{condition.description},'%')
+        </if>
+        <if test="condition.remark != null and condition.remark != ''">
+            and co.remark like CONCAT('%',#{condition.remark},'%')
+        </if>
+        <if test="condition.status != null">
+            and co.status = #{condition.status}
+        </if>
+        <if test="condition.reserve != null and condition.reserve != ''">
+            and co.reserve like CONCAT('%',#{condition.reserve},'%')
+        </if>
+    </sql>
+    <sql id="orderSql">
+        <if test="condition.field != null and condition.field != '' and condition.order != null and condition.order != ''">
+            order by co.${condition.field} ${condition.order}
+        </if>
+        <if test="condition.field != null and condition.field != '' and (condition.order == null or condition.order == '')">
+            order by co.${condition.field} desc
+        </if>
+        <if test="(condition.field == null or condition.field == '') and (condition.order == null or condition.order == '')">
+            order by co.id desc
+        </if>
+    </sql>
+</mapper>

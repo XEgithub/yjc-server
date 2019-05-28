@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dk.data.dao.HospitalMapper">
+    <resultMap id="BaseResultMap" type="com.dk.data.entity.Hospital">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="uuid" jdbcType="VARCHAR" property="uuid" />
+        <result column="logo" jdbcType="VARCHAR" property="logo" />
+        <result column="name" jdbcType="VARCHAR" property="name" />
+        <result column="address" jdbcType="VARCHAR" property="address" />
+        <result column="phone" jdbcType="VARCHAR" property="phone" />
+        <result column="tel" jdbcType="VARCHAR" property="tel" />
+        <result column="visit_count" jdbcType="BIGINT" property="visitCount" />
+        <result column="description" jdbcType="VARCHAR" property="description" />
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+        <result column="operator" jdbcType="VARCHAR" property="operator" />
+        <result column="remark" jdbcType="VARCHAR" property="remark" />
+        <result column="remark1" jdbcType="VARCHAR" property="remark1" />
+        <result column="status" jdbcType="TINYINT" property="status" />
+        <result column="reserve" jdbcType="VARCHAR" property="reserve" />
+        <result column="deleted" jdbcType="BIT" property="deleted" />
+    </resultMap>
+
+    <sql id="baseColumn">
+        hos.id,hos.uuid,hos.logo,hos.name,hos.address,hos.phone,hos.tel,hos.visit_count,
+		hos.description,hos.create_time,hos.update_time,hos.operator,hos.remark,hos.remark1,
+		hos.status,hos.reserve,hos.deleted
+    </sql>
+
+    <insert id="batchInsert" parameterType="java.util.List" keyProperty="id" useGeneratedKeys="true">
+        insert into hospital (
+        uuid,logo,name,address,phone,tel,visit_count,description,create_time,update_time,operator,
+		remark,remark1,status,reserve,deleted
+        )
+        values
+        <foreach item="item" collection="list" separator=",">
+         (#{item.uuid,jdbcType=VARCHAR},#{item.logo,jdbcType=VARCHAR},
+		#{item.name,jdbcType=VARCHAR},#{item.address,jdbcType=VARCHAR},#{item.phone,jdbcType=VARCHAR},
+		#{item.tel,jdbcType=VARCHAR},#{item.visitCount,jdbcType=BIGINT},
+		#{item.description,jdbcType=VARCHAR},#{item.createTime,jdbcType=TIMESTAMP},
+		#{item.updateTime,jdbcType=TIMESTAMP},#{item.operator,jdbcType=VARCHAR},#{item.remark,jdbcType=VARCHAR},
+		#{item.remark1,jdbcType=VARCHAR},#{item.status,jdbcType=TINYINT},
+		#{item.reserve,jdbcType=VARCHAR},#{item.deleted,jdbcType=BIT})
+        </foreach>
+    </insert>
+    <update id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        update hospital
+        set deleted = true
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="deleteByUuid" parameterType="java.lang.String">
+        update hospital
+        set deleted = true
+        where uuid = #{uuid,jdbcType=VARCHAR}
+    </update>
+    <update id="batchDeleteById" parameterType="java.util.List">
+        update hospital
+        set deleted = true
+        where id in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id,jdbcType=BIGINT}
+        </foreach>
+    </update>
+    <update id="batchDeleteByUuid" parameterType="java.util.List">
+        update hospital
+        set deleted = true
+        where uuid in
+        <foreach collection="list" item="uuid" open="(" separator="," close=")">
+            #{uuid,jdbcType=VARCHAR}
+        </foreach>
+    </update>
+    <select id="findAll" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from hospital as hos
+        where hos.deleted = false
+        <include refid="whereSql"/>
+        <include refid="orderSql"/>
+    </select>
+    <select id="count" resultType="java.lang.Integer">
+        select count(id)
+        from hospital as hos
+        where hos.deleted = false
+        <include refid="whereSql"/>
+    </select>
+    <select id="findByUuid" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from hospital as hos
+        where hos.uuid = #{uuid}
+    </select>
+    <select id="findByLikeName" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from hospital as hos
+        where hos.name like '%' #{keyword} '%'
+    </select>
+    <select id="batchQueryByIds" parameterType="java.util.List" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from hospital as hos
+        where hos.id in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        and hos.deleted = false
+    </select>
+    <select id="batchQueryByUuids" parameterType="java.util.List" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from hospital as hos
+        where hos.id in
+        <foreach collection="list" item="uuid" open="(" separator="," close=")">
+            '${uuid}'
+        </foreach>
+        and hos.deleted = false
+    </select>
+    <sql id="whereSql">
+        <if test="condition.logo != null and condition.logo != ''">
+            and hos.logo like CONCAT('%',#{condition.logo},'%')
+        </if>
+        <if test="condition.name != null and condition.name != ''">
+            and hos.name like CONCAT('%',#{condition.name},'%')
+        </if>
+        <if test="condition.address != null and condition.address != ''">
+            and hos.address like CONCAT('%',#{condition.address},'%')
+        </if>
+        <if test="condition.phone != null and condition.phone != ''">
+            and hos.phone like CONCAT('%',#{condition.phone},'%')
+        </if>
+        <if test="condition.tel != null and condition.tel != ''">
+            and hos.tel like CONCAT('%',#{condition.tel},'%')
+        </if>
+        <if test="condition.visitCount != null">
+            and hos.visit_count = #{condition.visitCount}
+        </if>
+        <if test="condition.description != null and condition.description != ''">
+            and hos.description like CONCAT('%',#{condition.description},'%')
+        </if>
+        <if test="condition.createTime != null">
+            <![CDATA[  and DATE_FORMAT(hos.create_time, '%Y-%m-%d') >=  DATE_FORMAT(#{createTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.updateTime != null">
+            <![CDATA[  and DATE_FORMAT(hos.update_time, '%Y-%m-%d') >=  DATE_FORMAT(#{updateTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.operator != null and condition.operator != ''">
+            and hos.operator like CONCAT('%',#{condition.operator},'%')
+        </if>
+        <if test="condition.remark != null and condition.remark != ''">
+            and hos.remark like CONCAT('%',#{condition.remark},'%')
+        </if>
+        <if test="condition.remark1 != null and condition.remark1 != ''">
+            and hos.remark1 like CONCAT('%',#{condition.remark1},'%')
+        </if>
+        <if test="condition.status != null">
+            and hos.status = #{condition.status}
+        </if>
+        <if test="condition.reserve != null and condition.reserve != ''">
+            and hos.reserve like CONCAT('%',#{condition.reserve},'%')
+        </if>
+    </sql>
+    <sql id="orderSql">
+        <if test="condition.field != null and condition.field != '' and condition.order != null and condition.order != ''">
+            order by hos.${condition.field} ${condition.order}
+        </if>
+        <if test="condition.field != null and condition.field != '' and (condition.order == null or condition.order == '')">
+            order by hos.${condition.field} desc
+        </if>
+        <if test="(condition.field == null or condition.field == '') and (condition.order == null or condition.order == '')">
+            order by hos.id desc
+        </if>
+    </sql>
+</mapper>

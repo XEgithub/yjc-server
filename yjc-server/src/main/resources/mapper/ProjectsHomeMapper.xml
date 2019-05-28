@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dk.data.dao.ProjectsHomeMapper">
+    <resultMap id="BaseResultMap" type="com.dk.data.entity.ProjectsHome">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="uuid" jdbcType="VARCHAR" property="uuid" />
+        <result column="project" jdbcType="VARCHAR" property="project" />
+        <result column="type" jdbcType="VARCHAR" property="type" />
+        <result column="classify" jdbcType="VARCHAR" property="classify" />
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+        <result column="deleted" jdbcType="BIT" property="deleted" />
+    </resultMap>
+
+    <sql id="baseColumn">
+        ph.id,ph.uuid,ph.project,ph.type,ph.classify,ph.create_time,ph.update_time,ph.deleted
+    </sql>
+
+    <insert id="batchInsert" parameterType="java.util.List" keyProperty="id" useGeneratedKeys="true">
+        insert into projects_home (
+        uuid,project,type,classify,create_time,update_time,deleted
+        )
+        values
+        <foreach item="item" collection="list" separator=",">
+         (#{item.uuid,jdbcType=VARCHAR},#{item.project,jdbcType=VARCHAR},
+		#{item.type,jdbcType=VARCHAR},#{item.classify,jdbcType=VARCHAR},
+		#{item.createTime,jdbcType=TIMESTAMP},#{item.updateTime,jdbcType=TIMESTAMP},#{item.deleted,jdbcType=BIT})
+        </foreach>
+    </insert>
+    <update id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        update projects_home
+        set deleted = true
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="deleteByUuid" parameterType="java.lang.String">
+        update projects_home
+        set deleted = true
+        where uuid = #{uuid,jdbcType=VARCHAR}
+    </update>
+    <update id="batchDeleteById" parameterType="java.util.List">
+        update projects_home
+        set deleted = true
+        where id in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id,jdbcType=BIGINT}
+        </foreach>
+    </update>
+    <update id="batchDeleteByUuid" parameterType="java.util.List">
+        update projects_home
+        set deleted = true
+        where uuid in
+        <foreach collection="list" item="uuid" open="(" separator="," close=")">
+            #{uuid,jdbcType=VARCHAR}
+        </foreach>
+    </update>
+    <select id="findAll" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from projects_home as ph
+        where ph.deleted = false
+        <include refid="whereSql"/>
+        <include refid="orderSql"/>
+    </select>
+    <select id="findByClassify" resultType="com.dk.data.entity.Project">
+        select p.*
+        from project as p
+        left join projects_home as ph
+        on p.uuid = ph.project
+        where p.deleted = false
+        and ph.classify = #{condition.classify,jdbcType=VARCHAR}
+        <if test="condition.hospital != null and condition.hospital != ''">
+            and p.hospital = #{condition.hospital,jdbcType=VARCHAR}
+        </if>
+        order by p.${condition.field} ${condition.order}
+    </select>
+    <select id="countByClassify" resultType="java.lang.Integer">
+        select count(p.id)
+        from project as p
+        left join projects_home as ph
+        on p.uuid = ph.project
+        where p.deleted = false
+        and ph.classify = #{condition.classify,jdbcType=VARCHAR}
+        <if test="condition.hospital != null and condition.hospital != ''">
+            and p.hospital = #{condition.hospital,jdbcType=VARCHAR}
+        </if>
+    </select>
+    <select id="findByClassifyGroup" resultType="com.dk.data.entity.ProjectGroup">
+        select p.*
+        from project_group as p
+        left join projects_home as ph
+        on p.uuid = ph.project
+        where p.deleted = false
+        and ph.classify = #{condition.classify,jdbcType=VARCHAR}
+        and p.hospital = #{condition.hospital,jdbcType=VARCHAR}
+        order by p.${condition.field} ${condition.order}
+    </select>
+    <select id="count" resultType="java.lang.Integer">
+        select count(id)
+        from projects_home as ph
+        where ph.deleted = false
+        <include refid="whereSql"/>
+    </select>
+    <select id="findByUuid" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from projects_home as ph
+        where ph.uuid = #{uuid}
+    </select>
+    <select id="batchQueryByIds" parameterType="java.util.List" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from projects_home as ph
+        where ph.id in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        and ph.deleted = false
+    </select>
+    <select id="batchQueryByUuids" parameterType="java.util.List" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from projects_home as ph
+        where ph.id in
+        <foreach collection="list" item="uuid" open="(" separator="," close=")">
+            '${uuid}'
+        </foreach>
+        and ph.deleted = false
+    </select>
+    <sql id="whereSql">
+        <if test="condition.project != null and condition.project != ''">
+            and ph.project like CONCAT('%',#{condition.project},'%')
+        </if>
+        <if test="condition.type != null and condition.type != ''">
+            and ph.type like CONCAT('%',#{condition.type},'%')
+        </if>
+        <if test="condition.classify != null and condition.classify != ''">
+            and ph.classify = #{condition.classify}
+        </if>
+        <if test="condition.createTime != null">
+            <![CDATA[  and DATE_FORMAT(ph.create_time, '%Y-%m-%d') >=  DATE_FORMAT(#{createTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.updateTime != null">
+            <![CDATA[  and DATE_FORMAT(ph.update_time, '%Y-%m-%d') >=  DATE_FORMAT(#{updateTime}, '%Y-%m-%d')   ]]>
+        </if>
+    </sql>
+    <sql id="orderSql">
+        <if test="condition.field != null and condition.field != '' and condition.order != null and condition.order != ''">
+            order by ph.${condition.field} ${condition.order}
+        </if>
+        <if test="condition.field != null and condition.field != '' and (condition.order == null or condition.order == '')">
+            order by ph.${condition.field} desc
+        </if>
+        <if test="(condition.field == null or condition.field == '') and (condition.order == null or condition.order == '')">
+            order by ph.id asc
+        </if>
+    </sql>
+</mapper>

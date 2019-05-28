@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dk.data.dao.ConcernMapper">
+    <resultMap id="BaseResultMap" type="com.dk.data.entity.Concern">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="uuid" jdbcType="VARCHAR" property="uuid" />
+        <result column="user" jdbcType="VARCHAR" property="user" />
+        <result column="project" jdbcType="VARCHAR" property="project" />
+        <result column="type" jdbcType="VARCHAR" property="type" />
+        <result column="hospital" jdbcType="VARCHAR" property="hospital" />
+        <result column="image" jdbcType="VARCHAR" property="image" />
+        <result column="name" jdbcType="VARCHAR" property="name" />
+        <result column="old_price" jdbcType="DECIMAL" property="oldPrice" />
+        <result column="now_price" jdbcType="DECIMAL" property="nowPrice" />
+        <result column="description" jdbcType="VARCHAR" property="description" />
+        <result column="concern_time" jdbcType="TIMESTAMP" property="concernTime" />
+        <result column="cancel_time" jdbcType="TIMESTAMP" property="cancelTime" />
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+        <result column="status" jdbcType="TINYINT" property="status" />
+        <result column="deleted" jdbcType="BIT" property="deleted" />
+        <result column="reserve" jdbcType="VARCHAR" property="reserve" />
+    </resultMap>
+
+    <sql id="baseColumn">
+        ce.id,ce.uuid,ce.user,ce.project,ce.type,ce.hospital,ce.image,ce.name,ce.old_price,ce.now_price,
+		ce.description,ce.concern_time,ce.cancel_time,ce.create_time,ce.update_time,ce.status,
+		ce.deleted,ce.reserve
+    </sql>
+
+    <insert id="batchInsert" parameterType="java.util.List" keyProperty="id" useGeneratedKeys="true">
+        insert into concern (
+        uuid,user,project,type,hospital,image,name,old_price,now_price,description,concern_time,
+		cancel_time,create_time,update_time,status,deleted,reserve
+        )
+        values
+        <foreach item="item" collection="list" separator=",">
+         (#{item.uuid,jdbcType=VARCHAR},#{item.user,jdbcType=VARCHAR},
+		#{item.project,jdbcType=VARCHAR},#{item.type,jdbcType=VARCHAR},#{item.hospital,jdbcType=VARCHAR},
+		#{item.image,jdbcType=VARCHAR},
+		#{item.name,jdbcType=VARCHAR},#{item.oldPrice,jdbcType=DECIMAL},
+		#{item.nowPrice,jdbcType=DECIMAL},#{item.description,jdbcType=VARCHAR},#{item.concernTime,jdbcType=TIMESTAMP},
+		#{item.cancelTime,jdbcType=TIMESTAMP},#{item.createTime,jdbcType=TIMESTAMP},
+		#{item.updateTime,jdbcType=TIMESTAMP},#{item.status,jdbcType=TINYINT},
+		#{item.deleted,jdbcType=BIT},#{item.reserve,jdbcType=VARCHAR})
+        </foreach>
+    </insert>
+    <update id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        update concern
+        set deleted = true
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="deleteByUuid" parameterType="java.lang.String">
+        update concern
+        set deleted = true
+        where uuid = #{uuid,jdbcType=VARCHAR}
+    </update>
+    <update id="batchDeleteById" parameterType="java.util.List">
+        update concern
+        set deleted = true
+        where id in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id,jdbcType=BIGINT}
+        </foreach>
+    </update>
+    <update id="batchDeleteByUuid" parameterType="java.util.List">
+        update concern
+        set deleted = true
+        where uuid in
+        <foreach collection="list" item="uuid" open="(" separator="," close=")">
+            #{uuid,jdbcType=VARCHAR}
+        </foreach>
+    </update>
+    <select id="findAll" resultMap="BaseResultMap">
+        select ce.id,ce.uuid,ce.user,ce.project,ce.type,ce.hospital,ho.name as hospitalName,ce.image,ce.name,ce.old_price,ce.now_price,
+        ce.description,ce.concern_time,ce.cancel_time,ce.create_time,ce.update_time,ce.status,
+        ce.deleted,ce.reserve
+        from concern as ce
+        left join hospital ho
+        on ce.hospital = ho.uuid
+        where ce.deleted = false
+        <include refid="whereSql"/>
+        <include refid="orderSql"/>
+    </select>
+    <select id="count" resultType="java.lang.Integer">
+        select count(id)
+        from concern as ce
+        where ce.deleted = false
+        <include refid="whereSql"/>
+    </select>
+    <select id="findByUuid" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from concern as ce
+        where ce.uuid = #{uuid}
+    </select>
+    <select id="batchQueryByIds" parameterType="java.util.List" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from concern as ce
+        where ce.id in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        and ce.deleted = false
+    </select>
+    <select id="batchQueryByUuids" parameterType="java.util.List" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from concern as ce
+        where ce.id in
+        <foreach collection="list" item="uuid" open="(" separator="," close=")">
+            '${uuid}'
+        </foreach>
+        and ce.deleted = false
+    </select>
+    <select id="findByCondition" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from concern as ce
+        where ce.deleted = false
+        <include refid="whereSql"/>
+    </select>
+    <sql id="whereSql">
+        <if test="condition.user != null and condition.user != ''">
+            and ce.user = #{condition.user}
+        </if>
+        <if test="condition.project != null and condition.project != ''">
+            and ce.project = #{condition.project}
+        </if>
+        <if test="condition.type != null and condition.type != ''">
+            and ce.type = #{condition.type}
+        </if>
+        <if test="condition.hospital != null and condition.hospital != ''">
+            and ce.hospital = #{condition.hospital}
+        </if>
+        <if test="condition.image != null and condition.image != ''">
+            and ce.image like CONCAT('%',#{condition.image},'%')
+        </if>
+        <if test="condition.name != null and condition.name != ''">
+            and ce.name like CONCAT('%',#{condition.name},'%')
+        </if>
+        <if test="condition.oldPrice != null">
+            and ce.old_price = #{condition.oldPrice}
+        </if>
+        <if test="condition.nowPrice != null">
+            and ce.now_price = #{condition.nowPrice}
+        </if>
+        <if test="condition.description != null and condition.description != ''">
+            and ce.description like CONCAT('%',#{condition.description},'%')
+        </if>
+        <if test="condition.concernTime != null">
+            <![CDATA[  and DATE_FORMAT(ce.concern_time, '%Y-%m-%d') >=  DATE_FORMAT(#{concernTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.cancelTime != null">
+            <![CDATA[  and DATE_FORMAT(ce.cancel_time, '%Y-%m-%d') >=  DATE_FORMAT(#{cancelTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.createTime != null">
+            <![CDATA[  and DATE_FORMAT(ce.create_time, '%Y-%m-%d') >=  DATE_FORMAT(#{createTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.updateTime != null">
+            <![CDATA[  and DATE_FORMAT(ce.update_time, '%Y-%m-%d') >=  DATE_FORMAT(#{updateTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.status != null and condition.status != ''">
+            and ce.status = #{condition.status}
+        </if>
+        <if test="condition.reserve != null and condition.reserve != ''">
+            and ce.reserve like CONCAT('%',#{condition.reserve},'%')
+        </if>
+    </sql>
+    <sql id="orderSql">
+        <if test="condition.field != null and condition.field != '' and condition.order != null and condition.order != ''">
+            order by ce.${condition.field} ${condition.order}
+        </if>
+        <if test="condition.field != null and condition.field != '' and (condition.order == null or condition.order == '')">
+            order by ce.${condition.field} desc
+        </if>
+        <if test="(condition.field == null or condition.field == '') and (condition.order == null or condition.order == '')">
+            order by ce.id desc
+        </if>
+    </sql>
+</mapper>

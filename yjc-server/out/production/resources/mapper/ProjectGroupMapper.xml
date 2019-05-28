@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dk.data.dao.ProjectGroupMapper">
+    <resultMap id="BaseResultMap" type="com.dk.data.entity.ProjectGroup">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="uuid" jdbcType="VARCHAR" property="uuid" />
+        <result column="type" jdbcType="VARCHAR" property="type" />
+        <result column="logo" jdbcType="VARCHAR" property="logo" />
+        <result column="banner" jdbcType="VARCHAR" property="banner" />
+        <result column="image" jdbcType="VARCHAR" property="image" />
+        <result column="image1" jdbcType="VARCHAR" property="image1" />
+        <result column="image2" jdbcType="VARCHAR" property="image2" />
+        <result column="image3" jdbcType="VARCHAR" property="image3" />
+        <result column="name" jdbcType="VARCHAR" property="name" />
+        <result column="hospital" jdbcType="VARCHAR" property="hospital" />
+        <result column="old_price" jdbcType="DECIMAL" property="oldPrice" />
+        <result column="now_price" jdbcType="DECIMAL" property="nowPrice" />
+        <result column="period" jdbcType="VARCHAR" property="period" />
+        <result column="sampling_pipe" jdbcType="VARCHAR" property="samplingPipe" />
+        <result column="notes" jdbcType="VARCHAR" property="notes" />
+        <result column="classify1" jdbcType="VARCHAR" property="classify1" />
+        <result column="classify2" jdbcType="VARCHAR" property="classify2" />
+        <result column="keyword" jdbcType="VARCHAR" property="keyword" />
+        <result column="remark" jdbcType="VARCHAR" property="remark" />
+        <result column="remark1" jdbcType="VARCHAR" property="remark1" />
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+        <result column="operator" jdbcType="VARCHAR" property="operator" />
+        <result column="description" jdbcType="VARCHAR" property="description" />
+        <result column="detail" jdbcType="VARCHAR" property="detail" />
+        <result column="status" jdbcType="TINYINT" property="status" />
+        <result column="reserve" jdbcType="VARCHAR" property="reserve" />
+        <result column="deleted" jdbcType="BIT" property="deleted" />
+    </resultMap>
+
+    <sql id="baseColumn">
+        progro.id,progro.uuid,progro.type,progro.logo,progro.banner,progro.image,
+		progro.image1,progro.image2,progro.image3,progro.name,progro.hospital,progro.old_price,
+		progro.now_price,progro.period,progro.sampling_pipe,progro.notes,progro.classify1,progro.classify2,
+		progro.keyword,progro.remark,progro.remark1,progro.create_time,progro.update_time,
+		progro.operator,progro.description,progro.detail,progro.status,progro.reserve,progro.deleted
+    </sql>
+
+    <insert id="batchInsert" parameterType="java.util.List" keyProperty="id" useGeneratedKeys="true">
+        insert into project_group (
+        uuid,type,logo,banner,image,image1,image2,image3,name,hospital,old_price,now_price,
+		period,sampling_pipe,notes,classify1,classify2,keyword,remark,remark1,create_time,update_time,operator,
+		description,detail,status,reserve,deleted
+        )
+        values
+        <foreach item="item" collection="list" separator=",">
+         (#{item.uuid,jdbcType=VARCHAR},#{item.type,jdbcType=VARCHAR},
+		#{item.logo,jdbcType=VARCHAR},#{item.banner,jdbcType=VARCHAR},#{item.image,jdbcType=VARCHAR},
+		#{item.image1,jdbcType=VARCHAR},#{item.image2,jdbcType=VARCHAR},
+		#{item.image3,jdbcType=VARCHAR},#{item.name,jdbcType=VARCHAR},#{item.hospital,jdbcType=VARCHAR},
+		#{item.oldPrice,jdbcType=DECIMAL},#{item.nowPrice,jdbcType=DECIMAL},
+		#{item.period,jdbcType=VARCHAR},#{item.samplingPipe,jdbcType=VARCHAR},
+		#{item.notes,jdbcType=VARCHAR},#{item.classify1,jdbcType=VARCHAR},
+		#{item.classify2,jdbcType=VARCHAR},#{item.keyword,jdbcType=VARCHAR},
+		#{item.remark,jdbcType=VARCHAR},#{item.remark1,jdbcType=VARCHAR},#{item.createTime,jdbcType=TIMESTAMP},
+		#{item.updateTime,jdbcType=TIMESTAMP},#{item.operator,jdbcType=VARCHAR},
+		#{item.description,jdbcType=VARCHAR},#{item.detail,jdbcType=VARCHAR},
+		#{item.status,jdbcType=TINYINT},#{item.reserve,jdbcType=VARCHAR},#{item.deleted,jdbcType=BIT})
+        </foreach>
+    </insert>
+    <update id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        update project_group
+        set deleted = true
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="deleteByUuid" parameterType="java.lang.String">
+        update project_group
+        set deleted = true
+        where uuid = #{uuid,jdbcType=VARCHAR}
+    </update>
+    <update id="batchDeleteById" parameterType="java.util.List">
+        update project_group
+        set deleted = true
+        where id in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id,jdbcType=BIGINT}
+        </foreach>
+    </update>
+    <update id="batchDeleteByUuid" parameterType="java.util.List">
+        update project_group
+        set deleted = true
+        where uuid in
+        <foreach collection="list" item="uuid" open="(" separator="," close=")">
+            #{uuid,jdbcType=VARCHAR}
+        </foreach>
+    </update>
+    <select id="findAll" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from project_group as progro
+        where progro.deleted = false
+        <include refid="whereSql"/>
+        <include refid="orderSql"/>
+    </select>
+    <select id="count" resultType="java.lang.Integer">
+        select count(id)
+        from project_group as progro
+        where progro.deleted = false
+        <include refid="whereSql"/>
+    </select>
+    <select id="findByUuid" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from project_group as progro
+        where progro.uuid = #{uuid,jdbcType=VARCHAR}
+    </select>
+    <select id="batchQueryByIds" parameterType="java.util.List" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from project_group as progro
+        where progro.id in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        and progro.deleted = false
+    </select>
+    <select id="batchQueryByUuids" parameterType="java.util.List" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from project_group as progro
+        where progro.id in
+        <foreach collection="list" item="uuid" open="(" separator="," close=")">
+            '${uuid}'
+        </foreach>
+        and progro.deleted = false
+    </select>
+
+    <select id="findByCondition" resultType="com.dk.data.entity.ProjectGroup">
+        select p.*
+        from project_group p
+        left join hospital h
+        on p.hospital = h.uuid
+        where p.deleted = false
+        and p.name like '%' #{condition.keyword} '%'
+        <if test="condition.hospital != null and condition.hospital != ''">
+            and p.hospital = #{condition.hospital}
+        </if>
+        order by p.${condition.field} ${condition.order}
+    </select>
+    <select id="countByCondition" resultType="java.lang.Long">
+        select count(p.id)
+        from project_group p
+        left join hospital h
+        on p.hospital = h.uuid
+        where p.deleted = false
+        and p.name like '%' #{condition.keyword} '%'
+        <if test="condition.hospital != null and condition.hospital != ''">
+            and p.hospital = #{condition.hospital}
+        </if>
+    </select>
+    <select id="findByLikeName" resultMap="BaseResultMap">
+        select p.*
+        from project_group p
+        where p.deleted = false
+        and p.name like '%' #{keyword,jdbcType=VARCHAR} '%'
+    </select>
+    <sql id="whereSql">
+        <if test="condition.type != null and condition.type != ''">
+            and progro.type like CONCAT('%',#{condition.type},'%')
+        </if>
+        <if test="condition.logo != null and condition.logo != ''">
+            and progro.logo like CONCAT('%',#{condition.logo},'%')
+        </if>
+        <if test="condition.banner != null and condition.banner != ''">
+            and progro.banner like CONCAT('%',#{condition.banner},'%')
+        </if>
+        <if test="condition.image != null and condition.image != ''">
+            and progro.image like CONCAT('%',#{condition.image},'%')
+        </if>
+        <if test="condition.image1 != null and condition.image1 != ''">
+            and progro.image1 like CONCAT('%',#{condition.image1},'%')
+        </if>
+        <if test="condition.image2 != null and condition.image2 != ''">
+            and progro.image2 like CONCAT('%',#{condition.image2},'%')
+        </if>
+        <if test="condition.image3 != null and condition.image3 != ''">
+            and progro.image3 like CONCAT('%',#{condition.image3},'%')
+        </if>
+        <if test="condition.name != null and condition.name != ''">
+            and progro.name like CONCAT('%',#{condition.name},'%')
+        </if>
+        <if test="condition.hospital != null and condition.hospital != ''">
+            and progro.hospital like CONCAT('%',#{condition.hospital},'%')
+        </if>
+        <if test="condition.oldPrice != null">
+            and progro.old_price = #{condition.oldPrice}
+        </if>
+        <if test="condition.nowPrice != null">
+            and progro.now_price = #{condition.nowPrice}
+        </if>
+        <if test="condition.period != null and condition.period != ''">
+            and progro.period like CONCAT('%',#{condition.period},'%')
+        </if>
+        <if test="condition.notes != null and condition.notes != ''">
+            and progro.notes like CONCAT('%',#{condition.notes},'%')
+        </if>
+        <if test="condition.classify1 != null and condition.classify1 != ''">
+            and progro.classify1 like CONCAT('%',#{condition.classify1},'%')
+        </if>
+        <if test="condition.classify2 != null and condition.classify2 != ''">
+            and progro.classify2 like CONCAT('%',#{condition.classify2},'%')
+        </if>
+        <if test="condition.keyword != null and condition.keyword != ''">
+            and progro.keyword like CONCAT('%',#{condition.keyword},'%')
+        </if>
+        <if test="condition.remark != null and condition.remark != ''">
+            and progro.remark like CONCAT('%',#{condition.remark},'%')
+        </if>
+        <if test="condition.remark1 != null and condition.remark1 != ''">
+            and progro.remark1 like CONCAT('%',#{condition.remark1},'%')
+        </if>
+        <if test="condition.createTime != null">
+            <![CDATA[  and DATE_FORMAT(progro.create_time, '%Y-%m-%d') >=  DATE_FORMAT(#{createTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.updateTime != null">
+            <![CDATA[  and DATE_FORMAT(progro.update_time, '%Y-%m-%d') >=  DATE_FORMAT(#{updateTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.operator != null and condition.operator != ''">
+            and progro.operator like CONCAT('%',#{condition.operator},'%')
+        </if>
+        <if test="condition.description != null and condition.description != ''">
+            and progro.description like CONCAT('%',#{condition.description},'%')
+        </if>
+        <if test="condition.detail != null and condition.detail != ''">
+            and progro.detail like CONCAT('%',#{condition.detail},'%')
+        </if>
+        <if test="condition.status != null">
+            and progro.status = #{condition.status}
+        </if>
+        <if test="condition.reserve != null and condition.reserve != ''">
+            and progro.reserve like CONCAT('%',#{condition.reserve},'%')
+        </if>
+    </sql>
+    <sql id="orderSql">
+        <if test="condition.field != null and condition.field != '' and condition.order != null and condition.order != ''">
+            order by progro.${condition.field} ${condition.order}
+        </if>
+        <if test="condition.field != null and condition.field != '' and (condition.order == null or condition.order == '')">
+            order by progro.${condition.field} desc
+        </if>
+        <if test="(condition.field == null or condition.field == '') and (condition.order == null or condition.order == '')">
+            order by progro.id desc
+        </if>
+    </sql>
+</mapper>

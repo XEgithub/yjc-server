@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dk.data.dao.SearchHisMapper">
+    <resultMap id="BaseResultMap" type="com.dk.data.entity.SearchHis">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="uuid" jdbcType="VARCHAR" property="uuid" />
+        <result column="search_name" jdbcType="VARCHAR" property="searchName" />
+        <result column="time" jdbcType="BIGINT" property="time" />
+        <result column="user" jdbcType="VARCHAR" property="user" />
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+        <result column="status" jdbcType="BIT" property="status" />
+        <result column="reserve" jdbcType="VARCHAR" property="reserve" />
+        <result column="deleted" jdbcType="BIT" property="deleted" />
+    </resultMap>
+
+    <sql id="baseColumn">
+        se.id,se.uuid,se.search_name,se.time,se.user,se.create_time,se.update_time,
+		se.status,se.reserve,se.deleted
+    </sql>
+
+    <insert id="batchInsert" parameterType="java.util.List" keyProperty="id" useGeneratedKeys="true">
+        insert into search_his (
+        uuid,search_name,time,user,create_time,update_time,status,reserve,deleted
+        )
+        values
+        <foreach item="item" collection="list" separator=",">
+         (#{item.uuid,jdbcType=VARCHAR},#{item.searchName,jdbcType=VARCHAR},
+		#{item.time,jdbcType=BIGINT},#{item.user,jdbcType=VARCHAR},
+		#{item.createTime,jdbcType=TIMESTAMP},#{item.updateTime,jdbcType=TIMESTAMP},#{item.status,jdbcType=BIT},
+		#{item.reserve,jdbcType=VARCHAR},#{item.deleted,jdbcType=BIT})
+        </foreach>
+    </insert>
+    <update id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        update search_his
+        set deleted = true
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="deleteByUuid" parameterType="java.lang.String">
+        update search_his
+        set deleted = true
+        where uuid = #{uuid,jdbcType=VARCHAR}
+    </update>
+    <update id="batchDeleteById" parameterType="java.util.List">
+        update search_his
+        set deleted = true
+        where id in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id,jdbcType=BIGINT}
+        </foreach>
+    </update>
+    <update id="batchDeleteByUuid" parameterType="java.util.List">
+        update search_his
+        set deleted = true
+        where uuid in
+        <foreach collection="list" item="uuid" open="(" separator="," close=")">
+            #{uuid,jdbcType=VARCHAR}
+        </foreach>
+    </update>
+
+    <update id="updateByUuid">
+        update search_his
+        set time = #{condition.time,jdbcType=BIGINT}, update_time = #{condition.updateTime,jdbcType=TIMESTAMP},
+            deleted = #{condition.deleted,jdbcType=BIT}, status = #{condition.status,jdbcType=BIT}
+        where uuid = #{condition.uuid,jdbcType=VARCHAR}
+    </update>
+    <update id="updateStatusByUserUuid">
+        update search_his sh
+        set sh.status = true
+        where sh.deleted = false
+        and sh.user = #{user,jdbcType=VARCHAR}
+    </update>
+    <select id="findAll" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from search_his as se
+        where se.deleted = false
+        and se.status = false
+        <include refid="whereSql"/>
+        <include refid="orderSql"/>
+    </select>
+    <select id="count" resultType="java.lang.Integer">
+        select count(id)
+        from search_his as se
+        where se.deleted = false
+        and se.status = false
+        <include refid="whereSql"/>
+    </select>
+    <select id="findByUuid" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from search_his as se
+        where se.uuid = #{uuid}
+    </select>
+    <select id="batchQueryByIds" parameterType="java.util.List" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from search_his as se
+        where se.id in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        and se.deleted = false
+    </select>
+    <select id="batchQueryByUuids" parameterType="java.util.List" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from search_his as se
+        where se.id in
+        <foreach collection="list" item="uuid" open="(" separator="," close=")">
+            '${uuid}'
+        </foreach>
+        and se.deleted = false
+    </select>
+    <select id="findByUserAndSearchName" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from search_his as se
+        where se.user = #{user,jdbcType=VARCHAR}
+        and se.search_name = #{keyword,jdbcType=VARCHAR}
+    </select>
+    <select id="findById" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from search_his as se
+        where se.id = #{id,jdbcType=BIGINT}
+    </select>
+    <sql id="whereSql">
+        <if test="condition.searchName != null and condition.searchName != ''">
+            and se.search_name like CONCAT('%',#{condition.searchName},'%')
+        </if>
+        <if test="condition.time != null">
+            and se.time = #{condition.time}
+        </if>
+        <if test="condition.user != null and condition.user != ''">
+            and se.user like CONCAT('%',#{condition.user},'%')
+        </if>
+        <if test="condition.createTime != null">
+            <![CDATA[  and DATE_FORMAT(se.create_time, '%Y-%m-%d') >=  DATE_FORMAT(#{createTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.updateTime != null">
+            <![CDATA[  and DATE_FORMAT(se.update_time, '%Y-%m-%d') >=  DATE_FORMAT(#{updateTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.status != null">
+            and se.status = #{condition.status}
+        </if>
+        <if test="condition.reserve != null and condition.reserve != ''">
+            and se.reserve like CONCAT('%',#{condition.reserve},'%')
+        </if>
+    </sql>
+    <sql id="orderSql">
+        <if test="condition.field != null and condition.field != '' and condition.order != null and condition.order != ''">
+            order by se.${condition.field} ${condition.order}
+        </if>
+        <if test="condition.field != null and condition.field != '' and (condition.order == null or condition.order == '')">
+            order by se.${condition.field} desc
+        </if>
+        <if test="(condition.field == null or condition.field == '') and (condition.order == null or condition.order == '')">
+            order by se.id desc
+        </if>
+    </sql>
+</mapper>

@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dk.data.dao.ShoppingCartMapper">
+    <resultMap id="BaseResultMap" type="com.dk.data.entity.ShoppingCart">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="uuid" jdbcType="VARCHAR" property="uuid" />
+        <result column="user" jdbcType="VARCHAR" property="user" />
+        <result column="project" jdbcType="VARCHAR" property="project" />
+        <result column="project_type" jdbcType="VARCHAR" property="projectType" />
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+        <result column="status" jdbcType="BIT" property="status" />
+        <result column="remark" jdbcType="VARCHAR" property="remark" />
+        <result column="reserve" jdbcType="VARCHAR" property="reserve" />
+        <result column="deleted" jdbcType="BIT" property="deleted" />
+    </resultMap>
+
+    <sql id="baseColumn">
+        sh.id,sh.uuid,sh.user,sh.project,sh.project_type,sh.create_time,sh.update_time,
+		sh.status,sh.remark,sh.reserve,sh.deleted
+    </sql>
+
+    <insert id="batchInsert" parameterType="java.util.List" keyProperty="id" useGeneratedKeys="true">
+        insert into shopping_cart (
+        uuid,user,project,project_type,create_time,update_time,status,remark,reserve,deleted
+        )
+        values
+        <foreach item="item" collection="list" separator=",">
+         (#{item.uuid,jdbcType=VARCHAR},#{item.user,jdbcType=VARCHAR},
+		#{item.project,jdbcType=VARCHAR},#{item.projectType,jdbcType=VARCHAR},
+		#{item.createTime,jdbcType=TIMESTAMP},#{item.updateTime,jdbcType=TIMESTAMP},#{item.status,jdbcType=TINYINT},
+		#{item.remark,jdbcType=VARCHAR},#{item.reserve,jdbcType=VARCHAR},
+		#{item.deleted,jdbcType=BIT})
+        </foreach>
+    </insert>
+    <update id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        update shopping_cart
+        set deleted = true
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="deleteByUuid" parameterType="java.lang.String">
+        update shopping_cart
+        set status = true
+        where uuid = #{uuid,jdbcType=VARCHAR}
+    </update>
+    <update id="batchDeleteById" parameterType="java.util.List">
+        update shopping_cart
+        set deleted = true
+        where id in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id,jdbcType=BIGINT}
+        </foreach>
+    </update>
+    <update id="batchDeleteByUuid" parameterType="java.util.List">
+        update shopping_cart
+        set deleted = true
+        where uuid in
+        <foreach collection="list" item="uuid" open="(" separator="," close=")">
+            #{uuid,jdbcType=VARCHAR}
+        </foreach>
+    </update>
+    <select id="findAll" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from shopping_cart as sh
+        where sh.deleted = false
+        and sh.status = false
+        <include refid="whereSql"/>
+        <include refid="orderSql"/>
+    </select>
+    <select id="count" resultType="java.lang.Integer">
+        select count(id)
+        from shopping_cart as sh
+        where sh.deleted = false
+        <include refid="whereSql"/>
+    </select>
+    <select id="findByUuid" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from shopping_cart as sh
+        where sh.uuid = #{uuid}
+    </select>
+    <select id="batchQueryByIds" parameterType="java.util.List" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from shopping_cart as sh
+        where sh.id in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        and sh.deleted = false
+    </select>
+    <select id="batchQueryByUuids" parameterType="java.util.List" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from shopping_cart as sh
+        where sh.id in
+        <foreach collection="list" item="uuid" open="(" separator="," close=")">
+            '${uuid}'
+        </foreach>
+        and sh.deleted = false
+    </select>
+    <select id="findByUserAndProjectUuid" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from shopping_cart as sh
+        where sh.deleted = false
+        and sh.user = #{user,jdbcType=VARCHAR}
+        and sh.project = #{uuid,jdbcType=VARCHAR}
+    </select>
+    <select id="findByUserAndUuid" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from shopping_cart as sh
+        where sh.deleted = false
+        and sh.user = #{user,jdbcType=VARCHAR}
+        and sh.uuid = #{uuid,jdbcType=VARCHAR}
+    </select>
+    <sql id="whereSql">
+        <if test="condition.user != null and condition.user != ''">
+            and sh.user = #{condition.user,jdbcType=VARCHAR}
+        </if>
+        <if test="condition.project != null and condition.project != ''">
+            and sh.project like CONCAT('%',#{condition.project},'%')
+        </if>
+        <if test="condition.projectType != null and condition.projectType != ''">
+            and sh.project_type like CONCAT('%',#{condition.projectType},'%')
+        </if>
+        <if test="condition.createTime != null">
+            <![CDATA[  and DATE_FORMAT(sh.create_time, '%Y-%m-%d') >=  DATE_FORMAT(#{createTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.updateTime != null">
+            <![CDATA[  and DATE_FORMAT(sh.update_time, '%Y-%m-%d') >=  DATE_FORMAT(#{updateTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="condition.status != null">
+            and sh.status = #{condition.status,jdbcType=BIT}
+        </if>
+        <if test="condition.remark != null and condition.remark != ''">
+            and sh.remark like CONCAT('%',#{condition.remark},'%')
+        </if>
+        <if test="condition.reserve != null and condition.reserve != ''">
+            and sh.reserve like CONCAT('%',#{condition.reserve},'%')
+        </if>
+    </sql>
+    <sql id="orderSql">
+        <if test="condition.field != null and condition.field != '' and condition.order != null and condition.order != ''">
+            order by sh.${condition.field} ${condition.order}
+        </if>
+        <if test="condition.field != null and condition.field != '' and (condition.order == null or condition.order == '')">
+            order by sh.${condition.field} desc
+        </if>
+        <if test="(condition.field == null or condition.field == '') and (condition.order == null or condition.order == '')">
+            order by sh.id desc
+        </if>
+    </sql>
+</mapper>
